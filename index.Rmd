@@ -1,7 +1,6 @@
 ---
 output: 
-  html_document:
-    code_folding: hide
+  html_document
 css: styles.css
 ---
 
@@ -9,8 +8,14 @@ css: styles.css
 
 Loading estimates for major pollutants and hydrologic inputs to Tampa Bay.  Estimates are tons per year and are unique to each major bay segment.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
+* __AD__: atmospheric deposition
+* __DPS__: domestic point source
+* __GWS__: groundwater source
+* __IPS__: industrial point source
+* __NPS__: nonpoint source
+
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = T, fig.path = 'figs/', fig.path = 'figures/')
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
 library(tidyverse)
 library(plotly)
@@ -103,15 +108,15 @@ totab <- tndat %>%
   mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
   ungroup()
 
-totab %>%
-  downloadthis::download_this(
-    output_name = "TN-load-data",
-    output_extension = ".csv",
-    button_label = "Download data",
-    button_type = "warning",
-    has_icon = TRUE,
-    icon = "fa fa-save"
-  )
+# totab %>%
+#   downloadthis::download_this(
+#     output_name = "TN-load-data",
+#     output_extension = ".csv",
+#     button_label = "Download data",
+#     button_type = "warning",
+#     has_icon = TRUE,
+#     icon = "fa fa-save"
+#   )
 ```
 
 ```{r}
