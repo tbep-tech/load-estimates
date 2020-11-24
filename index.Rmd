@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = T, fig.path 
 library(tidyverse)
 library(plotly)
 library(colorspace)
+library(reactable)
 
 data(tndat)
 
@@ -27,29 +28,7 @@ levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa 
 
 ## Total Nitrogen {.tabset .tabset-pills}
 
-### Static
-
-```{r fig.height = 8, fig.width = 8}
-p <- ggplot(tndat, aes(x = YEAR, y = TN_tons, fill = SOURCE)) + 
-  geom_area(alpha = 0.6) +
-  theme_minimal() + 
-  theme(
-    axis.title.x = element_blank(), 
-    axis.text.x = element_text(angle = 45, size = 7, hjust = 1), 
-    axis.ticks.x = element_line(), 
-    legend.title = element_blank()
-  ) +
-  scale_y_continuous(expand = c(0, 0)) + 
-  scale_x_continuous(expand = c(0, 0), breaks = seq(1985, 2019)) + 
-  scale_fill_discrete_qualitative(palette = 'Dynamic') +
-  facet_wrap(~ bay_segment, ncol = 1, scales = 'free_y') +
-  labs(
-    y  = 'Total Nitrogen (tons/yr)'
-  )
-p
-```
-
-### Dynamic
+### Plot
 
 ```{r, out.width = '100%', out.height='750px'}
 cols <- qualitative_hcl(length(levs), palette = "Dynamic")
@@ -114,3 +93,37 @@ subplot(p1, p2, p3, p4, p5, shareX = T, nrows = length(levs), shareY = F, titleY
 ```
 
 ### Table
+
+```{r}
+totab <- tndat %>% 
+  select(bay_segment, YEAR, SOURCE, TN_tons) %>% 
+  pivot_wider(names_from = SOURCE, values_from = TN_tons) %>% 
+  rowwise() %>% 
+  mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
+  ungroup()
+
+sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
+                       borderRight = "1px solid #eee", fontWeight = 'bold')
+tab <- reactable(totab,
+                   groupBy = 'bay_segment',
+                   columns = list(
+                     YEAR = colDef(name = 'Year', 
+                                   format = colFormat(digits = 0, separators = FALSE), 
+                                   style = sticky_style, 
+                                   headerStyle = sticky_style, 
+                                   footerStyle = sticky_style
+                                   ), 
+                     bay_segment = colDef(name = ''), 
+                     Total = colDef(
+                        class = "sticky right-col-1", 
+                        headerClass = "sticky right-col-1",
+                        footerClass = "sticky right-col-1"
+                     )
+                   ),
+                   defaultColDef = colDef(
+                     footerStyle = list(fontWeight = "bold"),
+                     format = colFormat(digits = 2, separators = TRUE),
+                     resizable = TRUE
+                     )
+)
+tab
