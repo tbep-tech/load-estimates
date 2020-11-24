@@ -18,6 +18,8 @@ library(colorspace)
 
 data(tndat)
 
+levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
@@ -29,7 +31,7 @@ data(tndat)
 
 ```{r fig.height = 8, fig.width = 8}
 p <- ggplot(tndat, aes(x = YEAR, y = TN_tons, fill = SOURCE)) + 
-  geom_area(alpha = 0.9) +
+  geom_area(alpha = 0.6) +
   theme_minimal() + 
   theme(
     axis.title.x = element_blank(), 
@@ -49,4 +51,66 @@ p
 
 ### Dynamic
 
+```{r, out.width = '100%', out.height='750px'}
+cols <- qualitative_hcl(length(levs), palette = "Dynamic")
 
+for(lev in seq_along(levs)){
+  
+  toplo <- tndat %>% 
+    filter(bay_segment %in% !!levs[lev]) %>% 
+    spread(SOURCE, TN_tons)
+
+  showleg <- F
+  if(lev == 1)
+    showleg <- T
+  
+  p <- plot_ly(toplo)  %>% 
+    add_markers(x = ~YEAR, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
+    add_markers(x = ~YEAR, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
+    add_markers(x = ~YEAR, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
+    add_markers(x = ~YEAR, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
+    add_markers(x = ~YEAR, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp1', name = 'AD') %>% 
+    add_annotations(
+      text = ~unique(bay_segment),
+      x = 0.5,
+      y = 1.2,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+  
+  if(lev == 3)
+    p <- p %>% 
+      layout(
+        yaxis = list(title = 'Total Nitrogen (tons/yr)')
+      )
+  
+  if(lev != 3)
+    p <- p %>% 
+    layout(
+      yaxis = list(title = NA)
+    )
+  
+  nm <- paste0('p', lev)
+  
+  assign(nm, p)
+  
+}
+
+subplot(p1, p2, p3, p4, p5, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  layout(
+    xaxis = list(title = NA, gridcolor = '#FFFFFF'),
+    barmode = 'stack',
+    legend = list(title = list(text = 'Source'))
+  )
+```
+
+### Table
