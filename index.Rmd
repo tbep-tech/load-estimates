@@ -16,6 +16,7 @@ library(tidyverse)
 library(plotly)
 library(colorspace)
 library(reactable)
+# library(downloadthis)
 
 data(tndat)
 
@@ -102,6 +103,18 @@ totab <- tndat %>%
   mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
   ungroup()
 
+totab %>%
+  downloadthis::download_this(
+    output_name = "TN-load-data",
+    output_extension = ".csv",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+```
+
+```{r}
 sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee", fontWeight = 'bold')
 tab <- reactable(totab,
