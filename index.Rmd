@@ -52,7 +52,7 @@ knitr::include_graphics('figs/segmap.PNG')
 tndat %>%
   downloadthis::download_this(
     output_name = "TN-load-data",
-    output_extension = ".csv",
+    output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
     has_icon = TRUE,
