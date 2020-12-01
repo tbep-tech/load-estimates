@@ -48,6 +48,20 @@ knitr::include_graphics('figs/segmap.PNG')
 
 ## Total Nitrogen {.tabset .tabset-pills}
 
+```{r}
+tndat %>%
+  downloadthis::download_this(
+    output_name = "TN-load-data",
+    output_extension = ".csv",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+```
+
+<br>
+
 ### Totals
 
 ```{r, out.width = '100%', out.height='850px'}
@@ -168,16 +182,6 @@ totab <- tndat %>%
   rowwise() %>% 
   mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
   ungroup()
-
-# totab %>%
-#   downloadthis::download_this(
-#     output_name = "TN-load-data",
-#     output_extension = ".csv",
-#     button_label = "Download data",
-#     button_type = "warning",
-#     has_icon = TRUE,
-#     icon = "fa fa-save"
-#   )
 ```
 
 ```{r}
@@ -206,3 +210,4 @@ tab <- reactable(totab,
                      )
 )
 tab
+```
