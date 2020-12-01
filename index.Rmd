@@ -4,15 +4,9 @@ output:
 css: styles.css
 ---
 
-# Tampa Bay load estimates 
+# Tampa Bay load estimates {.tabset}
 
 Loading estimates for major pollutants and hydrologic inputs to Tampa Bay.  Estimates are tons per year and are unique to each major bay segment.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
-
-* __AD__: atmospheric deposition
-* __DPS__: domestic point source
-* __GWS__: groundwater source
-* __IPS__: industrial point source
-* __NPS__: nonpoint source
 
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
@@ -32,9 +26,31 @@ levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa 
 # writeLines(styles, 'styles.css')
 ```
 
+## Background 
+
+Load estimates are partitioned into one of five categories depending on source: 
+
+* __AD__: atmospheric deposition
+* __DPS__: domestic point source
+* __GWS__: groundwater source
+* __IPS__: industrial point source
+* __NPS__: nonpoint source
+
+Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  
+
+```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtest of Janicki Environmental, Inc.'}
+knitr::include_graphics('figs/segmap.PNG')
+```
+
 ## Total Nitrogen {.tabset .tabset-pills}
 
-### Plot
+### Totals
+
+```{r, out.width = '100%', out.height='750px'}
+
+```
+
+### By source
 
 ```{r, out.width = '100%', out.height='750px'}
 cols <- qualitative_hcl(length(levs), palette = "Dynamic")
