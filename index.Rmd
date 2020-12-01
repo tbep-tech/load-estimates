@@ -19,7 +19,11 @@ library(reactable)
 
 data(tndat)
 
-levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+levs <- c('All Segments', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+
+tots <- tndat %>% 
+  group_by(bay_segment, YEAR) %>% 
+  summarise(TN_tons = sum(TN_tons), .groups = 'drop')
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
@@ -46,14 +50,55 @@ knitr::include_graphics('figs/segmap.PNG')
 
 ### Totals
 
-```{r, out.width = '100%', out.height='750px'}
+```{r, out.width = '100%', out.height='850px'}
 
+for(lev in seq_along(levs)){
+  
+  toplo <- tots %>% 
+    filter(bay_segment %in% !!levs[lev])
+
+  p <- plot_ly(toplo)  %>% 
+    add_trace(x = ~YEAR, y = ~TN_tons, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
+    add_annotations(
+      text = ~unique(bay_segment),
+      x = 0.5,
+      y = 1.2,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+  
+  if(lev == 2)
+    p <- p %>% 
+      layout(
+        yaxis = list(title = 'Total Nitrogen (tons/yr)')
+      )
+  
+  if(lev != 2)
+    p <- p %>% 
+    layout(
+      yaxis = list(title = NA)
+    )
+  
+  nm <- paste0('p', lev)
+  
+  assign(nm, p)
+  
+}
+
+subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  layout(
+    xaxis = list(title = NA, gridcolor = '#FFFFFF')
+  )
 ```
 
 ### By source
 
-```{r, out.width = '100%', out.height='750px'}
-cols <- qualitative_hcl(length(levs), palette = "Dynamic")
+```{r, out.width = '100%', out.height='850px'}
+cols <- qualitative_hcl(length(unique(tndat$SOURCE)), palette = "Dynamic")
 
 for(lev in seq_along(levs)){
   
@@ -88,13 +133,13 @@ for(lev in seq_along(levs)){
       font = list(size = 15)
     )
   
-  if(lev == 3)
+  if(lev == 2)
     p <- p %>% 
       layout(
         yaxis = list(title = 'Total Nitrogen (tons/yr)')
       )
   
-  if(lev != 3)
+  if(lev != 2)
     p <- p %>% 
     layout(
       yaxis = list(title = NA)
@@ -106,7 +151,7 @@ for(lev in seq_along(levs)){
   
 }
 
-subplot(p1, p2, p3, p4, p5, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
   layout(
     xaxis = list(title = NA, gridcolor = '#FFFFFF'),
     barmode = 'stack',

@@ -5,10 +5,9 @@ library(tidyverse)
 library(haven)
 
 # segment id
-levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 segid <- tibble(
   BAY_SEG = c(1, 2, 3, 4, 5567),
-  bay_segment = levs
+  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
 # 85 - 19
@@ -19,9 +18,14 @@ nps8519 <- read_sas('~/Desktop/TBEP/LoadingCodes&Datasets1719_toTBEP_20201117/To
 gws8519 <- read_sas('~/Desktop/TBEP/LoadingCodes&Datasets1719_toTBEP_20201117/TotalLoads1719/TotalLoads2019/gws_8519.sas7bdat')
 
 tndat <- bind_rows(ad8519, dps8519, ips8519, nps8519, gws8519) %>% 
-  left_join(segid, by = 'BAY_SEG') %>% 
-  mutate(
-    bay_segment = factor(bay_segment, levels = levs)
-  )
+  left_join(segid, by = 'BAY_SEG')
+
+# totals
+tots <- tndat%>% 
+  group_by(YEAR, SOURCE) %>% 
+  summarise(TN_tons = sum(TN_tons, na.rm = T), .groups = 'drop') %>% 
+  mutate(bay_segment = 'All Segments')
+
+tndat <- bind_rows(tots, tndat)
 
 save(tndat, file = 'data/tndat.RData', compress = 'xz')
