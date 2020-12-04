@@ -24,7 +24,7 @@ tndat <- bind_rows(ad8519, dps8519, ips8519, nps8519, gws8519) %>%
 tots <- tndat%>% 
   group_by(YEAR, SOURCE) %>% 
   summarise(TN_tons = sum(TN_tons, na.rm = T), .groups = 'drop') %>% 
-  mutate(bay_segment = 'All Segments')
+  mutate(bay_segment = 'All Segments (- N. BCB)')
 
 tndat <- bind_rows(tots, tndat)
 

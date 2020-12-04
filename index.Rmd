@@ -19,7 +19,7 @@ library(reactable)
 
 data(tndat)
 
-levs <- c('All Segments', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 
 tots <- tndat %>% 
   group_by(bay_segment, YEAR) %>% 
@@ -40,7 +40,7 @@ Load estimates are partitioned into one of five categories depending on source:
 * __IPS__: industrial point source
 * __NPS__: nonpoint source
 
-Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  
+Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
 ```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtest of Janicki Environmental, Inc.'}
 knitr::include_graphics('figs/segmap.PNG')
