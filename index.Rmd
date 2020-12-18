@@ -211,3 +211,7 @@ tab <- reactable(totab,
 )
 tab
 ```
+
+## Total Phosphorus {.tabset .tabset-pills}
+
+## Hydrology {.tabset .tabset-pills}
