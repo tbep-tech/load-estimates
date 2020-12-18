@@ -6,6 +6,8 @@ css: styles.css
 
 # Tampa Bay load estimates {.tabset}
 
+`r Sys.time()` 
+
 Loading estimates for major pollutants and hydrologic inputs to Tampa Bay.  Estimates are tons per year and are unique to each major bay segment.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
