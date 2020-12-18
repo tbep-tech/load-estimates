@@ -214,4 +214,16 @@ tab
 
 ## Total Phosphorus {.tabset .tabset-pills}
 
+### Totals
+
+### By source
+
+### Table
+
 ## Hydrology {.tabset .tabset-pills}
+
+### Totals
+
+### By source
+
+### Table
