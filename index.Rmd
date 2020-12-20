@@ -17,15 +17,20 @@ library(tidyverse)
 library(plotly)
 library(colorspace)
 library(reactable)
-# library(downloadthis)
+library(downloadthis)
 
 data(tndat)
+data(hydat)
 
 levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 
-tots <- tndat %>% 
+tntots <- tndat %>% 
   group_by(bay_segment, YEAR) %>% 
-  summarise(TN_tons = sum(TN_tons), .groups = 'drop')
+  summarise(tn_load = sum(tn_load), .groups = 'drop')
+
+hytots <- hydat %>% 
+  group_by(bay_segment, YEAR) %>% 
+  summarise(hy_load = sum(hy_load), .groups = 'drop')
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
@@ -52,7 +57,7 @@ knitr::include_graphics('figs/segmap.PNG')
 
 ```{r}
 tndat %>%
-  downloadthis::download_this(
+  download_this(
     output_name = "TN-load-data",
     output_extension = ".xlsx",
     button_label = "Download data",
@@ -70,11 +75,11 @@ tndat %>%
 
 for(lev in seq_along(levs)){
   
-  toplo <- tots %>% 
+  toplo <- tntots %>% 
     filter(bay_segment %in% !!levs[lev])
 
   p <- plot_ly(toplo)  %>% 
-    add_trace(x = ~YEAR, y = ~TN_tons, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
+    add_trace(x = ~YEAR, y = ~tn_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
     add_annotations(
       text = ~unique(bay_segment),
       x = 0.5,
@@ -120,7 +125,7 @@ for(lev in seq_along(levs)){
   
   toplo <- tndat %>% 
     filter(bay_segment %in% !!levs[lev]) %>% 
-    spread(SOURCE, TN_tons)
+    spread(SOURCE, tn_load)
 
   showleg <- F
   if(lev == 1)
@@ -179,8 +184,8 @@ subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, ti
 
 ```{r}
 totab <- tndat %>% 
-  select(bay_segment, YEAR, SOURCE, TN_tons) %>% 
-  pivot_wider(names_from = SOURCE, values_from = TN_tons) %>% 
+  select(bay_segment, YEAR, SOURCE, tn_load) %>% 
+  pivot_wider(names_from = SOURCE, values_from = tn_load) %>% 
   rowwise() %>% 
   mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
   ungroup()
@@ -214,18 +219,168 @@ tab <- reactable(totab,
 tab
 ```
 
-## Total Phosphorus {.tabset .tabset-pills}
-
-### Totals
-
-### By source
-
-### Table
-
 ## Hydrology {.tabset .tabset-pills}
 
+```{r}
+hydat %>%
+  download_this(
+    output_name = "hydro-load-data",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+```
+
+<br>
+
 ### Totals
+
+```{r, out.width = '100%', out.height='850px'}
+
+for(lev in seq_along(levs)){
+  
+  toplo <- hytots %>% 
+    filter(bay_segment %in% !!levs[lev])
+
+  p <- plot_ly(toplo)  %>% 
+    add_trace(x = ~YEAR, y = ~hy_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
+    add_annotations(
+      text = ~unique(bay_segment),
+      x = 0.5,
+      y = 1.2,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+  
+  if(lev == 2)
+    p <- p %>% 
+      layout(
+        yaxis = list(title = 'Total Hydro Load (million m3/yr)')
+      )
+  
+  if(lev != 2)
+    p <- p %>% 
+    layout(
+      yaxis = list(title = NA)
+    )
+  
+  nm <- paste0('p', lev)
+  
+  assign(nm, p)
+  
+}
+
+subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  layout(
+    xaxis = list(title = NA, gridcolor = '#FFFFFF')
+  )
+```
 
 ### By source
 
+```{r, out.width = '100%', out.height='850px'}
+cols <- qualitative_hcl(length(unique(tndat$SOURCE)), palette = "Dynamic")
+
+for(lev in seq_along(levs)){
+  
+  toplo <- hydat %>% 
+    filter(bay_segment %in% !!levs[lev]) %>% 
+    spread(SOURCE, hy_load)
+
+  showleg <- F
+  if(lev == 1)
+    showleg <- T
+  
+  p <- plot_ly(toplo)  %>% 
+    add_markers(x = ~YEAR, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
+    add_markers(x = ~YEAR, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
+    add_markers(x = ~YEAR, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
+    add_markers(x = ~YEAR, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
+    add_markers(x = ~YEAR, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                        showlegend = showleg, legendgroup = 'grp1', name = 'AD') %>% 
+    add_annotations(
+      text = ~unique(bay_segment),
+      x = 0.5,
+      y = 1.2,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+  
+  if(lev == 2)
+    p <- p %>% 
+      layout(
+        yaxis = list(title = 'Total Hydro Load (million m3/yr)')
+      )
+  
+  if(lev != 2)
+    p <- p %>% 
+    layout(
+      yaxis = list(title = NA)
+    )
+  
+  nm <- paste0('p', lev)
+  
+  assign(nm, p)
+  
+}
+
+subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  layout(
+    xaxis = list(title = NA, gridcolor = '#FFFFFF'),
+    barmode = 'stack',
+    legend = list(title = list(text = 'Source'))
+  )
+```
+
 ### Table
+
+```{r}
+totab <- hydat %>% 
+  select(bay_segment, YEAR, SOURCE, hy_load) %>% 
+  pivot_wider(names_from = SOURCE, values_from = hy_load) %>% 
+  rowwise() %>% 
+  mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
+  ungroup()
+```
+
+```{r}
+sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
+                       borderRight = "1px solid #eee", fontWeight = 'bold')
+tab <- reactable(totab,
+                   groupBy = 'bay_segment',
+                   columns = list(
+                     YEAR = colDef(name = 'Year', 
+                                   format = colFormat(digits = 0, separators = FALSE), 
+                                   style = sticky_style, 
+                                   headerStyle = sticky_style, 
+                                   footerStyle = sticky_style
+                                   ), 
+                     bay_segment = colDef(name = ''), 
+                     Total = colDef(
+                        class = "sticky right-col-1", 
+                        headerClass = "sticky right-col-1",
+                        footerClass = "sticky right-col-1"
+                     )
+                   ),
+                   defaultColDef = colDef(
+                     footerStyle = list(fontWeight = "bold"),
+                     format = colFormat(digits = 2, separators = TRUE),
+                     resizable = TRUE
+                     )
+)
+tab
+```
