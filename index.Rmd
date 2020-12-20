@@ -31,7 +31,7 @@ levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middl
 
 ## Background 
 
-Total nitrogen load estimates are partitioned into one of five categories depending on source: 
+Total nitrogen load estimates are partitioned into one of five categories by source: 
 
 * __AD__: atmospheric deposition
 * __DPS__: domestic point source
