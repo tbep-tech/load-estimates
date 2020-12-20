@@ -8,7 +8,7 @@ css: styles.css
 
 `r Sys.time()` 
 
-Loading estimates for major pollutants and hydrologic inputs to Tampa Bay.  Estimates are tons per year and are unique to each major bay segment.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
+Loading estimates for total nitrogen (tons / yr) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
@@ -20,17 +20,9 @@ library(reactable)
 library(downloadthis)
 
 data(tndat)
-data(hydat)
+data(totdat)
 
 levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
-
-tntots <- tndat %>% 
-  group_by(bay_segment, YEAR) %>% 
-  summarise(tn_load = sum(tn_load), .groups = 'drop')
-
-hytots <- hydat %>% 
-  group_by(bay_segment, YEAR) %>% 
-  summarise(hy_load = sum(hy_load), .groups = 'drop')
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
@@ -39,13 +31,15 @@ hytots <- hydat %>%
 
 ## Background 
 
-Load estimates are partitioned into one of five categories depending on source: 
+Total nitrogen load estimates are partitioned into one of five categories depending on source: 
 
 * __AD__: atmospheric deposition
 * __DPS__: domestic point source
 * __GWS__: groundwater source
 * __IPS__: industrial point source
 * __NPS__: nonpoint source
+
+The totals tab shows results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios.  Source esimates for hydrology are not available prior to 2012 and only bay segment totals are shown.  The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
 
 Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
@@ -68,53 +62,6 @@ tndat %>%
 ```
 
 <br>
-
-### Totals
-
-```{r, out.width = '100%', out.height='850px'}
-
-for(lev in seq_along(levs)){
-  
-  toplo <- tntots %>% 
-    filter(bay_segment %in% !!levs[lev])
-
-  p <- plot_ly(toplo)  %>% 
-    add_trace(x = ~YEAR, y = ~tn_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
-    add_annotations(
-      text = ~unique(bay_segment),
-      x = 0.5,
-      y = 1.2,
-      yref = "paper",
-      xref = "paper",
-      xanchor = "middle",
-      yanchor = "top",
-      showarrow = FALSE,
-      font = list(size = 15)
-    )
-  
-  if(lev == 2)
-    p <- p %>% 
-      layout(
-        yaxis = list(title = 'Total Nitrogen (tons/yr)')
-      )
-  
-  if(lev != 2)
-    p <- p %>% 
-    layout(
-      yaxis = list(title = NA)
-    )
-  
-  nm <- paste0('p', lev)
-  
-  assign(nm, p)
-  
-}
-
-subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
-  layout(
-    xaxis = list(title = NA, gridcolor = '#FFFFFF')
-  )
-```
 
 ### By source
 
@@ -157,7 +104,7 @@ for(lev in seq_along(levs)){
   if(lev == 2)
     p <- p %>% 
       layout(
-        yaxis = list(title = 'Total Nitrogen (tons/yr)')
+        yaxis = list(title = 'Total Nitrogen (tons / yr)')
       )
   
   if(lev != 2)
@@ -219,10 +166,10 @@ tab <- reactable(totab,
 tab
 ```
 
-## Hydrology {.tabset .tabset-pills}
+## Totals {.tabset .tabset-pills}
 
 ```{r}
-hydat %>%
+totdat %>%
   download_this(
     output_name = "hydro-load-data",
     output_extension = ".xlsx",
@@ -235,17 +182,17 @@ hydat %>%
 
 <br>
 
-### Totals
+### Total Nitrogen
 
 ```{r, out.width = '100%', out.height='850px'}
 
 for(lev in seq_along(levs)){
   
-  toplo <- hytots %>% 
+  toplo <- totdat %>% 
     filter(bay_segment %in% !!levs[lev])
 
   p <- plot_ly(toplo)  %>% 
-    add_trace(x = ~YEAR, y = ~hy_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
+    add_trace(x = ~YEAR, y = ~tn_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
     add_annotations(
       text = ~unique(bay_segment),
       x = 0.5,
@@ -261,7 +208,7 @@ for(lev in seq_along(levs)){
   if(lev == 2)
     p <- p %>% 
       layout(
-        yaxis = list(title = 'Total Hydro Load (million m3/yr)')
+        yaxis = list(title = 'Total Nitrogen (tons / yr)')
       )
   
   if(lev != 2)
@@ -282,32 +229,17 @@ subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, ti
   )
 ```
 
-### By source
+### Hydrology
 
 ```{r, out.width = '100%', out.height='850px'}
-cols <- qualitative_hcl(length(unique(tndat$SOURCE)), palette = "Dynamic")
 
 for(lev in seq_along(levs)){
   
-  toplo <- hydat %>% 
-    filter(bay_segment %in% !!levs[lev]) %>% 
-    spread(SOURCE, hy_load)
+  toplo <- totdat %>% 
+    filter(bay_segment %in% !!levs[lev])
 
-  showleg <- F
-  if(lev == 1)
-    showleg <- T
-  
   p <- plot_ly(toplo)  %>% 
-    add_markers(x = ~YEAR, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                        showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
-    add_markers(x = ~YEAR, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                        showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
-    add_markers(x = ~YEAR, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                        showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
-    add_markers(x = ~YEAR, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                        showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
-    add_markers(x = ~YEAR, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                        showlegend = showleg, legendgroup = 'grp1', name = 'AD') %>% 
+    add_trace(x = ~YEAR, y = ~hy_load, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
     add_annotations(
       text = ~unique(bay_segment),
       x = 0.5,
@@ -323,7 +255,7 @@ for(lev in seq_along(levs)){
   if(lev == 2)
     p <- p %>% 
       layout(
-        yaxis = list(title = 'Total Hydro Load (million m3/yr)')
+        yaxis = list(title = 'Total Hydro Load (mill m3 / yr)')
       )
   
   if(lev != 2)
@@ -340,27 +272,79 @@ for(lev in seq_along(levs)){
 
 subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
   layout(
-    xaxis = list(title = NA, gridcolor = '#FFFFFF'),
-    barmode = 'stack',
-    legend = list(title = list(text = 'Source'))
+    xaxis = list(title = NA, gridcolor = '#FFFFFF')
   )
 ```
 
-### Table
+### Total Nitrogen vs Hydrology
 
-```{r}
-totab <- hydat %>% 
-  select(bay_segment, YEAR, SOURCE, hy_load) %>% 
-  pivot_wider(names_from = SOURCE, values_from = hy_load) %>% 
-  rowwise() %>% 
-  mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
-  ungroup()
+```{r, out.width = '100%', out.height='850px'}
+
+# ref lines
+lndf <- data.frame(
+  bay_segment = levs[-1], 
+  ln = c(1.08, 1.62, 1.24, 0.97, 1.59)
+)
+
+for(lev in seq_along(levs)){
+  
+  toplo <- totdat %>% 
+    filter(bay_segment %in% !!levs[lev])
+
+  p <- plot_ly(toplo)  %>% 
+    add_trace(x = ~YEAR, y = ~tnhy, color = I('blue'), mode = 'lines+markers', type = 'scatter', showlegend = F) %>% #, marker = list(opacity = 1, size = 4)) %>% 
+    add_annotations(
+      text = ~unique(bay_segment),
+      x = 0.5,
+      y = 1.2,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "middle",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+  
+  if(lev == 2)
+    p <- p %>% 
+      layout(
+        yaxis = list(title = 'TN vs Hydrology ratio')
+      )
+  
+  if(lev != 2)
+    p <- p %>% 
+    layout(
+      yaxis = list(title = NA)
+    )
+  
+  # horizontal ref line
+  if(lev != 1){
+    
+    ln <- lndf[lndf$bay_segment %in% levs[lev], 'ln']
+    
+    p <- p %>%  
+      add_segments(x = min(toplo$YEAR), xend = max(toplo$YEAR), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+    
+  }
+  
+  nm <- paste0('p', lev)
+  
+  assign(nm, p)
+  
+}
+
+subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  layout(
+    xaxis = list(title = NA, gridcolor = '#FFFFFF')
+  )
 ```
+
+### Table 
 
 ```{r}
 sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee", fontWeight = 'bold')
-tab <- reactable(totab,
+tab <- reactable(totdat,
                    groupBy = 'bay_segment',
                    columns = list(
                      YEAR = colDef(name = 'Year', 
@@ -370,11 +354,9 @@ tab <- reactable(totab,
                                    footerStyle = sticky_style
                                    ), 
                      bay_segment = colDef(name = ''), 
-                     Total = colDef(
-                        class = "sticky right-col-1", 
-                        headerClass = "sticky right-col-1",
-                        footerClass = "sticky right-col-1"
-                     )
+                     tn_load = colDef(name = "TN load (tons / yr)"), 
+                     hy_load = colDef(name = "Hydrologic load (mill m3 / yr)"), 
+                     tnhy = colDef(name = 'TN vs Hydrology ratio')
                    ),
                    defaultColDef = colDef(
                      footerStyle = list(fontWeight = "bold"),
