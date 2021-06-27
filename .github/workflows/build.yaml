@@ -1,7 +1,8 @@
 on:
   push:
-    paths:
-      - index.Rmd
+    branches:
+      - main
+      - master
 
 name: build
 
