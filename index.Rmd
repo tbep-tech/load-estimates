@@ -39,7 +39,7 @@ Total nitrogen load estimates are partitioned into one of five categories by sou
 * __IPS__: industrial point source
 * __NPS__: nonpoint source
 
-The totals tab shows results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios.  Source esimates for hydrology are not available prior to 2012 and only bay segment totals are shown.  The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
+The totals tab shows results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios.  Source estimates for hydrology are not available prior to 2012 and only bay segment totals are shown.  The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
 
 Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
