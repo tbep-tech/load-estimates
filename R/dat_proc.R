@@ -25,7 +25,7 @@ hyolddat <- read_sas('data/raw/h2oannseg8511.sas7bdat')
 lds20 <- read_sas('data/raw/totn2020_monthsegsource_20210617.sas7bdat') %>% 
   mutate(
     bay_seg = case_when(
-      bay_seg %in% c(5, 6, 7, 55) ~ 5567, 
+      bay_seg %in% c(55, 6, 7) ~ 5567, 
       T ~ bay_seg
     ), 
     source = case_when(
@@ -36,6 +36,7 @@ lds20 <- read_sas('data/raw/totn2020_monthsegsource_20210617.sas7bdat') %>%
       T ~ source
     )
   ) %>% 
+  filter(!bay_seg %in% 5) %>%
   filter(source %in% c('AD', 'DPS', 'GWS', 'IPS', 'NPS')) %>% 
   group_by(bay_seg, year, source) %>% 
   summarise(
