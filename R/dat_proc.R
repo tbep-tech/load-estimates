@@ -22,7 +22,7 @@ gws8519 <- read_sas('data/raw/gws_8519.sas7bdat')
 hyolddat <- read_sas('data/raw/h2oannseg8511.sas7bdat')
 
 # 2020 data as month, summarized to year
-lds20 <- read_sas('data/raw/totn2020_monthsegsource_20210617.sas7bdat') %>% 
+lds20 <- read_sas('data/raw/totn2020_monthsegsource_20210617.sas7bdat', .name_repair = 'minimal') %>% 
   mutate(
     bay_seg = case_when(
       bay_seg %in% c(55, 6, 7) ~ 5567, 
@@ -45,7 +45,7 @@ lds20 <- read_sas('data/raw/totn2020_monthsegsource_20210617.sas7bdat') %>%
     .groups = 'drop'
   ) %>% 
   mutate(
-    tn_load = tn_load / 1e3, # convert to tons?
+    tn_load = tn_load / 907, # convert kg to tons
     hy_load = hy_load / 1e6 # convert m3/yr to mill m3/yr
   ) %>% 
   rename(
