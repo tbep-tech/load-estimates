@@ -1,15 +1,22 @@
 
 library(tidyverse)
+library(lubridate)
 library(haven)
 library(here)
 
-# segment id
-segid <- tibble(
+# segment id, annuals
+segidann <- tibble(
   BAY_SEG = c(1, 2, 3, 4, 5567),
   bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
-# sas files ---------------------------------------------------------------
+# segment id, monthly
+segidmos <- tibble(
+  bayseg = c(1, 2, 3, 4, 55),
+  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+)
+
+# annual tn estimates -----------------------------------------------------
 
 # 85 - 20
 # original data from here T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-8/LoadingCodes&Datasets2020/TotalLoads2020'
@@ -28,7 +35,7 @@ dat <- bind_rows(ad8520, dps8520, ips8520, nps8520, gws8520) %>%
     hy_load = h2oload10e6m3, 
     tn_load = TN_tons
   ) %>% 
-  left_join(segid, by = 'BAY_SEG') 
+  left_join(segidann, by = 'BAY_SEG') 
 
 # totals across all segments
 tots <- dat %>% 
@@ -42,18 +49,16 @@ tots <- dat %>%
 
 dat <- bind_rows(tots, dat)
 
-# TN data by source, entire record ----------------------------------------
-
 # tn data only
-tndat <- dat %>% 
+tnanndat <- dat %>% 
   select(SOURCE, YEAR, tn_load, bay_segment)
 
-save(tndat, file = 'data/tndat.RData', compress = 'xz')
+save(tnanndat, file = 'data/tnanndat.RData', compress = 'xz')
 
-# totals ------------------------------------------------------------------
+# annual totals -----------------------------------------------------------
 
 # tn load, sum source within bay segment
-tntots <- tndat %>% 
+tntots <- tnanndat %>% 
   group_by(bay_segment, YEAR) %>% 
   summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
@@ -67,7 +72,7 @@ hytots <- dat %>%
 # hy dat prior to 2012
 hyoldtots <- hyolddat %>% 
   rename(BAY_SEG = bay_seg) %>% 
-  left_join(segid, by = 'BAY_SEG') %>% 
+  left_join(segidann, by = 'BAY_SEG') %>% 
   rename(
     hy_load = h2oload10e6m3, 
     YEAR = year
@@ -91,8 +96,53 @@ hytots <- hytots %>%
   arrange(bay_segment, YEAR)
 
 # combine tn, hy 
-totdat <- tntots %>% 
+totanndat <- tntots %>% 
   full_join(hytots, by = c('bay_segment', 'YEAR')) %>% 
   mutate(tnhy =  tn_load / hy_load)
 
-save(totdat, file = 'data/totdat.RData', compress = 'xz')
+save(totanndat, file = 'data/totanndat.RData', compress = 'xz')
+
+# monthly tn estimates ----------------------------------------------------
+
+# source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
+mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
+  select(bayseg, YEAR, MONTH, source, tnloadtons) %>% 
+  mutate(
+    source = case_when(
+      source == 'Atmospheric Deposition' ~ 'AD', 
+      source %in% c('Springs', 'Ground Water') ~ 'GWS', 
+      source %in% c('PS - Domestic - REUSE', 'PS - Domestic - SW') ~ 'DPS', 
+      source %in% c('PS - Industrial', 'Material Losses') ~ 'IPS', 
+      source == 'Non-Point Source' ~ 'NPS'
+    )
+  ) %>% 
+  group_by(bayseg, YEAR, MONTH, source) %>% 
+  summarise(
+    tnload = sum(tnloadtons), 
+    .groups = 'drop'
+  ) %>% 
+  left_join(segidmos, by = 'bayseg') %>% 
+  select(
+    SOURCE = source, 
+    YEAR, 
+    MONTH, 
+    tn_load = tnload, 
+    bay_segment
+  )
+
+totsmo <- mosdat %>% 
+  group_by(YEAR, MONTH, SOURCE) %>% 
+  summarise(
+    tn_load = sum(tn_load),
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)')
+
+tnmosdat <- bind_rows(mosdat, totsmo) %>% 
+  mutate(dy = 1) %>% 
+  unite('date', YEAR, MONTH, dy, sep = '-', remove = T) %>% 
+  mutate(
+    date = ymd(date)
+  )
+
+save(tnmosdat, file = here('data/tnmosdat.RData'))

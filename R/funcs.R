@@ -4,12 +4,12 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
   typs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
-  cols <- qualitative_hcl(length(unique(tndat$SOURCE)), palette = "Dynamic")
+  cols <- qualitative_hcl(length(unique(datin$SOURCE)), palette = "Dynamic")
 
   xval <- match.arg(xval)
   
   for(lev in seq_along(levs)){
-    
+
     toplo <- datin %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(dt = !!xval) %>% 
@@ -97,7 +97,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), xval = c('Y
   
   for(lev in seq_along(levs)){
     
-    toplo <- totdat %>% 
+    toplo <- datin %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(
         dt = !!xval, 
@@ -166,7 +166,7 @@ rct_tab <- function(datin, dtvar = c('YEAR', 'date'), typ = c('tn', 'tots')){
   
   if(typ == 'tn'){
     
-    totab <- tndat %>% 
+    totab <- datin %>% 
       rename(dt = !!dtvar) %>% 
       select(bay_segment, dt, SOURCE, tn_load) %>% 
       pivot_wider(names_from = SOURCE, values_from = tn_load) %>% 

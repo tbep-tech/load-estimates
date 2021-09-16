@@ -20,8 +20,9 @@ library(reactable)
 library(downloadthis)
 library(tools)
 
-data(tndat)
-data(totdat)
+data(tnanndat)
+data(tnmosdat)
+data(totanndat)
 
 source('R/funcs.R')
 
@@ -57,12 +58,12 @@ Annual load targets for total nitrogen (tons/yr) by major bay segments are as fo
 knitr::include_graphics('figs/segmap.PNG')
 ```
 
-## Total Nitrogen {.tabset .tabset-pills}
+## Total Nitrogen (annual) {.tabset .tabset-pills}
 
 ```{r}
-tndat %>%
+tnanndat %>%
   download_this(
-    output_name = "TN-load-data",
+    output_name = "TN-annual-load-data",
     output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
@@ -76,22 +77,49 @@ tndat %>%
 ### By source
 
 ```{r, out.width = '100%', out.height='850px'}
-tnsrc_plo(tndat)
+tnsrc_plo(tnanndat, xval = 'YEAR')
 ```
 
 ### Table
 
-
 ```{r}
-rct_tab(tndat, dtvar = 'YEAR', typ = 'tn')
+rct_tab(tnanndat, dtvar = 'YEAR', typ = 'tn')
 ```
 
-## Totals {.tabset .tabset-pills}
+## Total Nitrogen (monthly) {.tabset .tabset-pills}
 
 ```{r}
-totdat %>%
+tnmosdat %>%
   download_this(
-    output_name = "hydro-load-data",
+    output_name = "TN-monthly-load-data",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+```
+
+<br>
+
+### By source
+
+```{r, out.width = '100%', out.height='850px'}
+tnsrc_plo(tnmosdat, xval = 'date')
+```
+
+### Table
+
+```{r}
+rct_tab(tnmosdat, dtvar = 'date', typ = 'tn')
+```
+
+## Totals (annual) {.tabset .tabset-pills}
+
+```{r}
+totanndat %>%
+  download_this(
+    output_name = "hydro-annual-load-data",
     output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
@@ -105,23 +133,25 @@ totdat %>%
 ### Total Nitrogen
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totdat, yval = 'tn_load', xval = 'YEAR')
+ldtot_plo(totanndat, yval = 'tn_load', xval = 'YEAR')
 ```
 
 ### Hydrology
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totdat, yval = 'hy_load', xval = 'YEAR')
+ldtot_plo(totanndat, yval = 'hy_load', xval = 'YEAR')
 ```
 
 ### Total Nitrogen vs Hydrology
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totdat, yval = 'tnhy', xval = 'YEAR', addlns = T)
+ldtot_plo(totanndat, yval = 'tnhy', xval = 'YEAR', addlns = T)
 ```
 
 ### Table 
 
 ```{r}
-rct_tab(totdat, dtvar = 'YEAR', typ = 'tots')
+rct_tab(totanndat, dtvar = 'YEAR', typ = 'tots')
 ```
+
+## Totals (monthly) {.tabset .tabset-pills}
