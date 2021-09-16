@@ -114,7 +114,7 @@ tnsrc_plo(tnmosdat, xval = 'date')
 rct_tab(tnmosdat, dtvar = 'date', typ = 'tn')
 ```
 
-## Totals (annual) {.tabset .tabset-pills}
+## Totals {.tabset .tabset-pills}
 
 ```{r}
 totanndat %>%
@@ -153,5 +153,3 @@ ldtot_plo(totanndat, yval = 'tnhy', xval = 'YEAR', addlns = T)
 ```{r}
 rct_tab(totanndat, dtvar = 'YEAR', typ = 'tots')
 ```
-
-## Totals (monthly) {.tabset .tabset-pills}
