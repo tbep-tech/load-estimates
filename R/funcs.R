@@ -45,27 +45,27 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
     
     if(lev == 2)
       p <- p %>% 
-      layout(
-        yaxis = list(title = 'Total Nitrogen (tons / yr)')
-      )
+        layout(
+          yaxis = list(title = 'Total Nitrogen (tons / yr)')
+        )
     
     if(lev != 2)
       p <- p %>% 
-      layout(
-        yaxis = list(title = NA)
-      )
+        layout(
+          yaxis = list(title = NA)
+        )
     
     nm <- paste0('p', lev)
     
     assign(nm, p)
-    
+
   }
   
   out <- subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
     layout(
       xaxis = list(title = NA, gridcolor = '#FFFFFF'),
       barmode = 'stack',
-      legend = list(title = list(text = 'Source'))
+      legend = list(title = list(text = 'Source'), traceorder = 'reversed')
     )
   
   return(out)
