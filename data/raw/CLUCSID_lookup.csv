@@ -1,0 +1,82 @@
+CLUCSID,DESCRIPTION,FLUCS CODE
+1,Low Density Residential,1100
+2,Medium Density Residential,1200
+3,High Density Residential,1300
+4,Commercial,1400
+5,Industrial,1500
+7,"Institutional, Transportation, Utilities",1700
+7,"Institutional, Transportation, Utilities",8100
+7,"Institutional, Transportation, Utilities",8200
+7,"Institutional, Transportation, Utilities",8300
+15,Upland Forests,4100
+15,Upland Forests,4110
+15,Upland Forests,4120
+15,Upland Forests,4200
+15,Upland Forests,4300
+15,Upland Forests,4340
+15,Upland Forests,4400
+6,Mining,1600
+8,Range Lands,1480
+8,Range Lands,1800
+8,Range Lands,1900
+8,Range Lands,2420
+8,Range Lands,2600
+8,Range Lands,3100
+8,Range Lands,3200
+8,Range Lands,3300
+9,Barren Lands,7100
+9,Barren Lands,7200
+9,Barren Lands,7300
+9,Barren Lands,7400
+10,Pasture,2100
+10,Pasture,2110
+10,Pasture,2120
+10,Pasture,2130
+11,Groves,2200
+11,Groves,2210
+11,Groves,2220
+11,Groves,2230
+12,Feedlots,2300
+13,Nursery,2400
+14,Row and Field Crops,2140
+14,Row and Field Crops,2150
+14,Row and Field Crops,2440
+16,Freshwater,2500
+16,Freshwater,2540
+16,Freshwater,2550
+16,Freshwater,5100
+16,Freshwater,5200
+16,Freshwater,5210
+16,Freshwater,5220
+16,Freshwater,5230
+16,Freshwater,5240
+16,Freshwater,5300
+16,Freshwater,5310
+16,Freshwater,5320
+16,Freshwater,5330
+16,Freshwater,5340
+16,Freshwater,5500
+16,Freshwater,5600
+16,Freshwater,6440
+16,Freshwater,6450
+17,Saltwater,5400
+17,Saltwater,9113
+17,Saltwater,9116
+17,Saltwater,9121
+18,Forested Freshwater Wetlands,6100
+18,Forested Freshwater Wetlands,6110
+18,Forested Freshwater Wetlands,6150
+18,Forested Freshwater Wetlands,6200
+18,Forested Freshwater Wetlands,6210
+18,Forested Freshwater Wetlands,6240
+18,Forested Freshwater Wetlands,6300
+19,Saltwater Wetlands,6120
+19,Saltwater Wetlands,6420
+20,Non-forested Freshwater Wetlands,6400
+20,Non-forested Freshwater Wetlands,6410
+20,Non-forested Freshwater Wetlands,6411
+20,Non-forested Freshwater Wetlands,6430
+20,Non-forested Freshwater Wetlands,6530
+21,Tidal Flats,6500
+21,Tidal Flats,6510
+21,Tidal Flats,6520

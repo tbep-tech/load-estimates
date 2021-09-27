@@ -16,6 +16,9 @@ segidmos <- tibble(
   bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
+# coastal land use code lookup
+clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv')
+
 # annual tn estimates -----------------------------------------------------
 
 # 85 - 20
@@ -146,3 +149,41 @@ tnmosdat <- bind_rows(mosdat, totsmo) %>%
   )
 
 save(tnmosdat, file = here('data/tnmosdat.RData'))
+
+# monthly ips, dps, nps ---------------------------------------------------
+
+# non-point source
+npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
+  left_join(segidmos, by = 'bayseg') %>% 
+  left_join(clucs_lkup, by = 'CLUCSID') %>% 
+  mutate(dy = 1) %>% 
+  unite('date', year, month, dy, sep = '-', remove = T) %>% 
+  mutate(
+    date = ymd(date)
+  ) %>% 
+  select(date, bay_segment, basin, entity, lu = DESCRIPTION, tn_load = tnloadtons)
+
+# industrial point source
+ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
+  left_join(segidmos, by = 'bayseg') %>% 
+  mutate(dy = 1) %>% 
+  unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
+  mutate(
+    date = ymd(date)
+  ) %>% 
+  select(date, bay_segment, basin = BASIN, facility = facname, tn_load = tnloadtons)
+
+# domestic point source  
+dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+  left_join(segidmos, by = 'bayseg') %>% 
+  mutate(dy = 1) %>% 
+  unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
+  mutate(
+    date = ymd(date)
+  ) %>% 
+  select(date, bay_segment, basin, entity, facility = facname, source = source2, tn_load = tnloadtons)
+
+save(npsmosdat, file = here('data/npsmosdat.RData'))
+save(ipsmosdat, file = here('data/ipsmosdat.RData'))
+save(dpsmosdat, file = here('data/dpsmosdat.RData'))
+
