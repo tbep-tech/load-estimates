@@ -8,6 +8,10 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
 
   xval <- match.arg(xval)
   
+  ttl <- 'Total Nitrogen (tons / yr)'
+  if(xval == 'date')
+    ttl <- 'Total Nitrogen (tons / mo)'
+  
   for(lev in seq_along(levs)){
 
     toplo <- datin %>% 
@@ -46,7 +50,7 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
     if(lev == 2)
       p <- p %>% 
         layout(
-          yaxis = list(title = 'Total Nitrogen (tons / yr)')
+          yaxis = list(title = ttl)
         )
     
     if(lev != 2)
