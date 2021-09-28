@@ -8,7 +8,7 @@ css: styles.css
 
 `r Sys.time()` 
 
-Loading estimates for total nitrogen (tons / yr) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
+Loading estimates for total nitrogen (tons / yr or tons / mo) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
