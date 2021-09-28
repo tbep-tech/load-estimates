@@ -1,13 +1,16 @@
 #' plot tn load by source, annual or monthly
-tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
+tnsrc_plo <- function(datin, xval = c('YEAR', 'date'), src = c('all', 'select')){
   
-  typs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
+  xval <- match.arg(xval)
+
+  srcs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
+  if(src == 'select')
+    srcs <- c('DPS - reuse', 'DPS - stormwater', 'IPS', 'NPS')
+  
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
   cols <- qualitative_hcl(length(unique(datin$SOURCE)), palette = "Dynamic")
 
-  xval <- match.arg(xval)
-  
   ttl <- 'Total Nitrogen (tons / yr)'
   if(xval == 'date')
     ttl <- 'Total Nitrogen (tons / mo)'
@@ -17,24 +20,38 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date')){
     toplo <- datin %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(dt = !!xval) %>% 
-      mutate(SOURCE = factor(SOURCE, levels = typs)) %>% 
+      mutate(SOURCE = factor(SOURCE, levels = srcs)) %>% 
       spread(SOURCE, tn_load, fill = 0, drop = F)
     
     showleg <- F
     if(lev == 1)
       showleg <- T
     
-    p <- plot_ly(toplo)  %>% 
-      add_markers(x = ~dt, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                  showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
-      add_markers(x = ~dt, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                  showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
-      add_markers(x = ~dt, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                  showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
-      add_markers(x = ~dt, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                  showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
-      add_markers(x = ~dt, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                  showlegend = showleg, legendgroup = 'grp1', name = 'AD') %>% 
+    if(src == 'all')
+      p <- plot_ly(toplo)  %>% 
+        add_markers(x = ~dt, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
+        add_markers(x = ~dt, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
+        add_markers(x = ~dt, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
+        add_markers(x = ~dt, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
+        add_markers(x = ~dt, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp1', name = 'AD') 
+      
+    if(src == 'select')
+      p <- plot_ly(toplo)  %>% 
+        add_markers(x = ~dt, y = ~`DPS - reuse`, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp4', name = 'DPS - reuse') %>%   
+        add_markers(x = ~dt, y = ~`DPS - stormwater`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp3', name = 'DPS - stormwater') %>% 
+        add_markers(x = ~dt, y = ~IPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp2', name = 'IPS') %>% 
+        add_markers(x = ~dt, y = ~NPS, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp1', name = 'NPS') 
+    
+    p <- p %>% 
       add_annotations(
         text = ~unique(bay_segment),
         x = 0.5,
@@ -174,10 +191,10 @@ rct_tab <- function(datin, dtvar = c('YEAR', 'date'), typ = c('tn', 'tots')){
       rename(dt = !!dtvar) %>% 
       select(bay_segment, dt, SOURCE, tn_load) %>% 
       pivot_wider(names_from = SOURCE, values_from = tn_load) %>% 
-      rowwise() %>% 
-      mutate(Total = sum(AD, DPS , IPS, NPS ,GWS, na.rm = T)) %>% 
-      ungroup()
-      
+      mutate(
+        Total = rowSums(select(., -dt, -bay_segment), na.rm = T)
+      )
+
     out <- reactable(totab,
                      groupBy = 'bay_segment',
                      columns = list(

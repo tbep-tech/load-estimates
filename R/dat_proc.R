@@ -12,8 +12,8 @@ segidann <- tibble(
 
 # segment id, monthly
 segidmos <- tibble(
-  bayseg = c(1, 2, 3, 4, 55),
-  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+  bayseg = c(1, 2, 3, 4, 5, 6, 7, 55),
+  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
 # coastal land use code lookup
@@ -215,7 +215,8 @@ npsdpsipsall <- npsdpsips %>%
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
-npsdpsips <- bind_rows(npsdpsips, npsdpsipsall)
+npsdpsips <- bind_rows(npsdpsips, npsdpsipsall) %>% 
+  rename(SOURCE = source)
 
 save(npsdpsips, file = here('data/npsdpsips.RData'))
   

@@ -23,6 +23,7 @@ library(tools)
 data(tnanndat)
 data(tnmosdat)
 data(totanndat)
+data(npsdpsips)
 
 source('R/funcs.R')
 
@@ -43,7 +44,7 @@ Total nitrogen load estimates are partitioned into one of five categories by sou
 * __IPS__: industrial point source
 * __NPS__: nonpoint source
 
-Source estimates for total nitrogen are shown annually from 1985 to present and by month from 2017 to present (current reasonable assurance period).  The totals tab shows annual results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
+Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2020 (current reasonable assurance period), and by month from 2004 to 2020 for select sources (DPS reuse, DPS stormwater, IPS, NPS).  The totals tab shows annual results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
 
 Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
@@ -58,12 +59,12 @@ Annual load targets for total nitrogen (tons/yr) by major bay segments are as fo
 knitr::include_graphics('figs/segmap.PNG')
 ```
 
-## Total Nitrogen (annual) {.tabset .tabset-pills}
+## Total nitrogen (annual, 1985 - 2020) {.tabset .tabset-pills}
 
 ```{r}
 tnanndat %>%
   download_this(
-    output_name = "TN-annual-load-data",
+    output_name = "TN-annual",
     output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
@@ -77,7 +78,7 @@ tnanndat %>%
 ### By source
 
 ```{r, out.width = '100%', out.height='850px'}
-tnsrc_plo(tnanndat, xval = 'YEAR')
+tnsrc_plo(tnanndat, xval = 'YEAR', src = 'all')
 ```
 
 ### Table
@@ -86,12 +87,12 @@ tnsrc_plo(tnanndat, xval = 'YEAR')
 rct_tab(tnanndat, dtvar = 'YEAR', typ = 'tn')
 ```
 
-## Total Nitrogen (monthly) {.tabset .tabset-pills}
+## Total nitrogen (monthly, 2017 - 2020) {.tabset .tabset-pills}
 
 ```{r}
 tnmosdat %>%
   download_this(
-    output_name = "TN-monthly-load-data",
+    output_name = "TN-monthly",
     output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
@@ -105,7 +106,7 @@ tnmosdat %>%
 ### By source
 
 ```{r, out.width = '100%', out.height='850px'}
-tnsrc_plo(tnmosdat, xval = 'date')
+tnsrc_plo(tnmosdat, xval = 'date', src = 'all')
 ```
 
 ### Table
@@ -114,12 +115,40 @@ tnsrc_plo(tnmosdat, xval = 'date')
 rct_tab(tnmosdat, dtvar = 'date', typ = 'tn')
 ```
 
+## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset .tabset-pills}
+
+```{r}
+npsdpsips %>%
+  download_this(
+    output_name = "TN-select-sources-monthly",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+```
+
+<br>
+
+### By source
+
+```{r, out.width = '100%', out.height='850px'}
+tnsrc_plo(npsdpsips, xval = 'date', src = 'select')
+```
+
+### Table
+
+```{r}
+rct_tab(npsdpsips, dtvar = 'date', typ = 'tn')
+```
+
 ## Totals {.tabset .tabset-pills}
 
 ```{r}
 totanndat %>%
   download_this(
-    output_name = "hydro-annual-load-data",
+    output_name = "hydro-annual",
     output_extension = ".xlsx",
     button_label = "Download data",
     button_type = "warning",
