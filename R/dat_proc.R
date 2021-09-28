@@ -17,7 +17,9 @@ segidmos <- tibble(
 )
 
 # coastal land use code lookup
-clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv')
+clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>% 
+  select(CLUCSID, DESCRIPTION) %>% 
+  unique
 
 # annual tn estimates -----------------------------------------------------
 
@@ -159,9 +161,10 @@ npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   mutate(dy = 1) %>% 
   unite('date', year, month, dy, sep = '-', remove = T) %>% 
   mutate(
-    date = ymd(date)
+    date = ymd(date), 
+    source = 'NPS'
   ) %>% 
-  select(date, bay_segment, basin, entity, lu = DESCRIPTION, tn_load = tnloadtons)
+  select(date, bay_segment, basin, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
 
 # industrial point source
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
@@ -169,9 +172,10 @@ ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>%
   mutate(dy = 1) %>% 
   unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
   mutate(
-    date = ymd(date)
+    date = ymd(date), 
+    source = 'IPS'
   ) %>% 
-  select(date, bay_segment, basin = BASIN, facility = facname, tn_load = tnloadtons)
+  select(date, bay_segment, basin = BASIN, facility = facname, source, tn_load = tnloadtons)
 
 # domestic point source  
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
@@ -179,11 +183,39 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
   mutate(dy = 1) %>% 
   unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
   mutate(
-    date = ymd(date)
+    date = ymd(date), 
+    source = case_when(
+      grepl('REUSE$', source2) ~ 'DPS - reuse', 
+      grepl('SW$', source2) ~ 'DPS - stormwater'
+    )
   ) %>% 
-  select(date, bay_segment, basin, entity, facility = facname, source = source2, tn_load = tnloadtons)
+  select(date, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
 
 save(npsmosdat, file = here('data/npsmosdat.RData'))
 save(ipsmosdat, file = here('data/ipsmosdat.RData'))
 save(dpsmosdat, file = here('data/dpsmosdat.RData'))
 
+# get tn by bay segment only
+npsdpsips <- list(npsmosdat, ipsmosdat, dpsmosdat) %>% 
+  enframe() %>% 
+  mutate(
+    value = purrr::map(value, function(x) select(x, date, bay_segment, source, tn_load))
+  ) %>% 
+  unnest('value') %>% 
+  group_by(date, bay_segment, source) %>% 
+  summarise(
+    tn_load = sum(tn_load), 
+    .groups = 'drop'
+  ) 
+
+npsdpsipsall <- npsdpsips %>% 
+  group_by(date, source) %>% 
+  summarise(
+    tn_load = sum(tn_load), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)')
+npsdpsips <- bind_rows(npsdpsips, npsdpsipsall)
+
+save(npsdpsips, file = here('data/npsdpsips.RData'))
+  
