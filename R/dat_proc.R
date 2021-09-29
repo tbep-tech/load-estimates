@@ -304,3 +304,21 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat)
   
 save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))
+
+# nps tn by land use ------------------------------------------------------
+
+# non-point source
+npsmosludat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
+  left_join(clucs_lkup, by = 'CLUCSID') %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
+  group_by(DESCRIPTION, bay_segment, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
+  select(`land use` = DESCRIPTION, bay_segment, year, month, source, tn_load)
+
+save(npsmosludat, file = here('data/npsmosludat.RData'))
