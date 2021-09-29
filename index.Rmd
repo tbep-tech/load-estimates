@@ -21,11 +21,14 @@ library(reactable)
 library(downloadthis)
 library(tools)
 library(shiny)
+library(crosstalk)
+library(DT)
 
 data(tnanndat)
 data(tnmosdat)
 data(tnmosentdat)
 data(totanndat)
+data(npsmosdat)
 data(npsdpsips)
 data(npsdpsipsent)
 data(npsmosludat)
@@ -221,6 +224,46 @@ tnsrc_plo(npsdpsips, xval = 'date', src = 'select')
 
 ```{r}
 rct_tab(npsdpsips, dtvar = 'date', typ = 'tn')
+```
+
+### NPS by land use
+
+```{r, out.width = '100%', out.height = '250px'}
+dat <- npsmosdat %>% 
+  group_by(year, bay_segment, month, lu) %>% 
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop') %>% 
+  mutate(dy = 1) %>% 
+  unite('date', year, month, dy, sep = '-') %>% 
+  mutate(
+    date = ymd(date), 
+    tn_load = round(tn_load, 1)
+    ) %>% 
+  spread(bay_segment, tn_load, fill = 0) %>% 
+  select(date, lu, `Old Tampa Bay`, `Hillsborough Bay`, `Middle Tampa Bay`, `Lower Tampa Bay`, `Remainder Lower Tampa Bay`)
+
+toplo <- highlight_key(dat)
+filter_select("lusel", "Select land use", toplo, ~lu, multiple = F)
+
+showleg <- F
+cols <- qualitative_hcl(5, palette = "Dynamic")
+plot_ly(toplo) %>%
+  add_markers(x = ~date, y = ~`Remainder Lower Tampa Bay`, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp1', name = 'Remainder Lower Tampa Bay') %>% 
+  add_markers(x = ~date, y = ~`Lower Tampa Bay`, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp2', name = 'Lower Tampa Bay') %>%
+  add_markers(x = ~date, y = ~`Middle Tampa Bay`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp3', name = 'Middle Tampa Bay') %>%
+  add_markers(x = ~date, y = ~`Hillsborough Bay`, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp4', name = 'Hillsborough Bay') %>%
+    add_markers(x = ~date, y = ~`Old Tampa Bay`, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp5', name = 'Old Tampa Bay') %>% 
+  
+  layout(
+      xaxis = list(title = NA, gridcolor = '#FFFFFF'),
+      yaxis = list(title = 'TN load (tons / mo)', gridcolor = '#FFFFFF'),
+      barmode = 'stack',
+      legend = list(title = list(text = 'Bay segment'), traceorder = 'reversed')
+    )
+
+datatable(toplo, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE), 
+    colnames = c('Date', 'Land use', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay'))
+  
 ```
 
 ### Metadata
