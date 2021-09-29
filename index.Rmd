@@ -14,6 +14,7 @@ Loading estimates for total nitrogen (tons / yr or tons / mo) and hydrologic (mi
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
 library(tidyverse)
+library(lubridate)
 library(plotly)
 library(colorspace)
 library(reactable)
@@ -87,23 +88,23 @@ column(12,
 ### By source
 
 ```{r, out.width = '100%', out.height='850px'}
-tnsrc_plo(tnanndat, xval = 'YEAR', src = 'all')
+tnsrc_plo(tnanndat, xval = 'year', src = 'all')
 ```
 
 ### Table
 
 ```{r}
-rct_tab(tnanndat, dtvar = 'YEAR', typ = 'tn')
+rct_tab(tnanndat, dtvar = 'year', typ = 'tn')
 ```
 
 ### Metadata
 
 Data from the __Download plot data__ button includes the following: 
 
-* __*SOURCE*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
-* __*YEAR*__: year of the estimate
-* __*tn_load*__: total nitrogen load in tons / year
+* __*year*__: year of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
+* __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
+* __*tn_load*__: total nitrogen load in tons / year
 
 ## Total nitrogen (monthly, 2017 - 2020) {.tabset .tabset-pills}
 
@@ -153,17 +154,18 @@ rct_tab(tnmosdat, dtvar = 'date', typ = 'tn')
 
 Data from the __Download plot data__ button includes the following: 
 
-* __*SOURCE*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
-* __*date*__: year, month of the estimate, defaults to the first of the month although the estimate covers the total for the entire month
-* __*tn_load*__: total nitrogen load in tons / month
+* __*year*__: year of the estimate
+* __*month*__: month of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
+* __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
+* __*tn_load*__: total nitrogen load in tons / month
 
 Data from the __Download entity data__ button includes the following: 
 
+* __*year*__: year of the estimate
+* __*month*__: month of the estimate
 * __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
-* __*SOURCE*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
-* __*YEAR*__: year of the estimate
-* __*MONTH*__: month of the estimate
+* __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
 
 ## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset .tabset-pills}
@@ -225,25 +227,26 @@ rct_tab(npsdpsips, dtvar = 'date', typ = 'tn')
 
 Data from the __Download plot data__ button includes the following: 
 
-* __*date*__: year, month of the estimate, defaults to the first of the month although the estimate covers the total for the entire month
+* __*year*__: year of the estimate
+* __*month*__: month of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
-* __*SOURCE*__: total nitrogen source as domestic point source reuse (DPS - reuse), domestic point source stormwater (DPS - stormwater), industrial point source (IPS), and non-point source (NPS)
+* __*source*__: total nitrogen source as domestic point source reuse (DPS - reuse), domestic point source stormwater (DPS - stormwater), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
 
 Data from the __Download entity data__ button includes the following: 
 
-* __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
 * __*year*__: year of the estimate
 * __*month*__: month of the estimate
+* __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
 
 Data from the __Download NPS by land use__ button includes the following: 
 
-* __*land use*__: land use type associated with the load
-* __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*year*__: year of the estimate
 * __*month*__: month of the estimate
+* __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
+* __*land use*__: land use type associated with the load
 * __*source*__: total nitrogen source as non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
 
@@ -271,33 +274,33 @@ column(12,
 ### Total Nitrogen
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totanndat, yval = 'tn_load', xval = 'YEAR')
+ldtot_plo(totanndat, yval = 'tn_load')
 ```
 
 ### Hydrology
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totanndat, yval = 'hy_load', xval = 'YEAR')
+ldtot_plo(totanndat, yval = 'hy_load')
 ```
 
 ### Total Nitrogen vs Hydrology
 
 ```{r, out.width = '100%', out.height='850px'}
-ldtot_plo(totanndat, yval = 'tnhy', xval = 'YEAR', addlns = T)
+ldtot_plo(totanndat, yval = 'tnhy', addlns = T)
 ```
 
 ### Table 
 
 ```{r}
-rct_tab(totanndat, dtvar = 'YEAR', typ = 'tots')
+rct_tab(totanndat, dtvar = 'year', typ = 'tots')
 ```
 
 ### Metadata
 
 Data from the __Download plot data__ button includes the following: 
 
+* __*year*__: year of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
-* __*YEAR*__: year of the estimate
 * __*tn_load*__: total nitrogen load in tons / year
 * __*hy_load*__: hydrologic load in million cubic meters / year
 * __*tnhy*__: ratio between total nitrogen and hydrologic loads

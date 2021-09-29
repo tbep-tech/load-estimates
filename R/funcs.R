@@ -1,5 +1,5 @@
 #' plot tn load by source, annual or monthly
-tnsrc_plo <- function(datin, xval = c('YEAR', 'date'), src = c('all', 'select')){
+tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select')){
   
   xval <- match.arg(xval)
 
@@ -9,19 +9,28 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date'), src = c('all', 'select'))
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
-  cols <- qualitative_hcl(length(unique(datin$SOURCE)), palette = "Dynamic")
+  cols <- qualitative_hcl(length(unique(datin$source)), palette = "Dynamic")
 
   ttl <- 'Total Nitrogen (tons / yr)'
-  if(xval == 'date')
+  if(xval == 'date'){
     ttl <- 'Total Nitrogen (tons / mo)'
+
+    datin <- datin %>% 
+      mutate(dy = 1) %>% 
+      unite('date', year, month, dy, sep = '-', remove = T) %>% 
+      mutate(
+        date = ymd(date)
+      )
+    
+  }
   
   for(lev in seq_along(levs)){
 
     toplo <- datin %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(dt = !!xval) %>% 
-      mutate(SOURCE = factor(SOURCE, levels = srcs)) %>% 
-      spread(SOURCE, tn_load, fill = 0, drop = F)
+      mutate(source = factor(source, levels = srcs)) %>% 
+      spread(source, tn_load, fill = 0, drop = F)
     
     showleg <- F
     if(lev == 1)
@@ -94,7 +103,7 @@ tnsrc_plo <- function(datin, xval = c('YEAR', 'date'), src = c('all', 'select'))
 }
 
 #' plot total load as tn, hyd, or ratio, annual or monthly
-ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), xval = c('YEAR', 'date'), addlns = F){
+ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F){
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
@@ -109,7 +118,6 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), xval = c('Y
     ttl = c('Total Nitrogen (tons / yr)', 'Total Hydro Load (mill m3 / yr)', 'TN vs Hydrology ratio')
   ) 
     
-  xval <- match.arg(xval)
   yval <- match.arg(yval)
   
   ttl <- ylbs %>% 
@@ -121,7 +129,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), xval = c('Y
     toplo <- datin %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(
-        dt = !!xval, 
+        dt = year, 
         yv = !!yval
       )
     
@@ -177,7 +185,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), xval = c('Y
 }
 
 #' reactable table summaries
-rct_tab <- function(datin, dtvar = c('YEAR', 'date'), typ = c('tn', 'tots')){
+rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots')){
   
   dtvar <- match.arg(dtvar)
   typ <- match.arg(typ)
@@ -185,14 +193,23 @@ rct_tab <- function(datin, dtvar = c('YEAR', 'date'), typ = c('tn', 'tots')){
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee", fontWeight = 'bold')
   
+  if(dtvar == 'date')
+    datin <- datin %>% 
+      mutate(dy = 1) %>% 
+      unite('date', year, month, dy, sep = '-', remove = T) %>% 
+      mutate(
+        date = ymd(date)
+      )
+  
   if(typ == 'tn'){
     
     totab <- datin %>% 
       rename(dt = !!dtvar) %>% 
-      select(bay_segment, dt, SOURCE, tn_load) %>% 
-      pivot_wider(names_from = SOURCE, values_from = tn_load) %>% 
+      select(bay_segment, dt, source, tn_load) %>% 
+      pivot_wider(names_from = source, values_from = tn_load) %>% 
       mutate(
-        Total = rowSums(select(., -dt, -bay_segment), na.rm = T)
+        Total = rowSums(select(., -dt, -bay_segment), na.rm = T), 
+        dt = gsub('\\-[0-9]*$', '', dt)
       )
 
     out <- reactable(totab,

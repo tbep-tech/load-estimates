@@ -40,13 +40,15 @@ hyolddat <- read_sas(here('data/raw/h2oannseg8511.sas7bdat'))
 dat <- bind_rows(ad8520, dps8520, ips8520, nps8520, gws8520) %>% 
   rename(
     hy_load = h2oload10e6m3, 
-    tn_load = TN_tons
+    tn_load = TN_tons, 
+    year = YEAR,
+    source = SOURCE
   ) %>% 
   left_join(segidann, by = 'BAY_SEG') 
 
 # totals across all segments
 tots <- dat %>% 
-  group_by(YEAR, SOURCE) %>% 
+  group_by(year, source) %>% 
   summarise(
     tn_load = sum(tn_load),
     hy_load = sum(hy_load),
@@ -58,7 +60,7 @@ dat <- bind_rows(tots, dat)
 
 # tn data only
 tnanndat <- dat %>% 
-  select(SOURCE, YEAR, tn_load, bay_segment)
+  select(year, bay_segment, source, tn_load)
 
 save(tnanndat, file = 'data/tnanndat.RData', compress = 'xz')
 
@@ -66,14 +68,14 @@ save(tnanndat, file = 'data/tnanndat.RData', compress = 'xz')
 
 # tn load, sum source within bay segment
 tntots <- tnanndat %>% 
-  group_by(bay_segment, YEAR) %>% 
+  group_by(bay_segment, year) %>% 
   summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
 # hy dat only, 2012 to 2020, sum across source
 hytots <- dat %>% 
-  select(SOURCE, YEAR, hy_load, bay_segment) %>% 
+  select(source, year, hy_load, bay_segment) %>% 
   filter(!is.na(hy_load)) %>% 
-  group_by(bay_segment, YEAR) %>% 
+  group_by(bay_segment, year) %>% 
   summarise(hy_load = sum(hy_load, na.rm = T), .groups = 'drop')
 
 # hy dat prior to 2012
@@ -81,14 +83,13 @@ hyoldtots <- hyolddat %>%
   rename(BAY_SEG = bay_seg) %>% 
   left_join(segidann, by = 'BAY_SEG') %>% 
   rename(
-    hy_load = h2oload10e6m3, 
-    YEAR = year
+    hy_load = h2oload10e6m3
   ) %>% 
   select(-BAY_SEG)
 
 # hy dat prior to 2012, sum by segments
 hyoldallseg <- hyoldtots %>% 
-  group_by(YEAR) %>% 
+  group_by(year) %>% 
   summarise(
     hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
@@ -100,12 +101,13 @@ hyoldtots <- hyoldtots %>%
 
 hytots <- hytots %>% 
   bind_rows(hyoldtots) %>% 
-  arrange(bay_segment, YEAR)
+  arrange(bay_segment, year)
 
 # combine tn, hy 
 totanndat <- tntots %>% 
-  full_join(hytots, by = c('bay_segment', 'YEAR')) %>% 
-  mutate(tnhy =  tn_load / hy_load)
+  full_join(hytots, by = c('bay_segment', 'year')) %>% 
+  mutate(tnhy =  tn_load / hy_load) %>% 
+  select(year, bay_segment, tn_load, hy_load, tnhy)
 
 save(totanndat, file = 'data/totanndat.RData', compress = 'xz')
 
@@ -113,7 +115,7 @@ save(totanndat, file = 'data/totanndat.RData', compress = 'xz')
 
 # source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
 mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
-  select(bayseg, YEAR, MONTH, source, tnloadtons) %>% 
+  select(bayseg, year = YEAR, month = MONTH, source, tnloadtons) %>% 
   mutate(
     source = case_when(
       source == 'Atmospheric Deposition' ~ 'AD', 
@@ -123,22 +125,22 @@ mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>%
       source == 'Non-Point Source' ~ 'NPS'
     )
   ) %>% 
-  group_by(bayseg, YEAR, MONTH, source) %>% 
+  group_by(bayseg, year, month, source) %>% 
   summarise(
     tnload = sum(tnloadtons), 
     .groups = 'drop'
   ) %>% 
   left_join(segidmos, by = 'bayseg') %>% 
   select(
-    SOURCE = source, 
-    YEAR, 
-    MONTH, 
+    source, 
+    year, 
+    month, 
     tn_load = tnload, 
     bay_segment
   )
 
 totsmo <- mosdat %>% 
-  group_by(YEAR, MONTH, SOURCE) %>% 
+  group_by(year, month, source) %>% 
   summarise(
     tn_load = sum(tn_load),
     .groups = 'drop'
@@ -146,20 +148,15 @@ totsmo <- mosdat %>%
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
 tnmosdat <- bind_rows(mosdat, totsmo) %>% 
-  mutate(dy = 1) %>% 
-  unite('date', YEAR, MONTH, dy, sep = '-', remove = T) %>% 
-  mutate(
-    date = ymd(date)
-  )
+  select(year, month, bay_segment, source, tn_load)
 
 save(tnmosdat, file = here('data/tnmosdat.RData'))
-
 
 # all monthly tn estimates by entity --------------------------------------
 
 # source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
 tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
-  select(entity, YEAR, MONTH, source, tnloadtons) %>% 
+  select(entity, year = YEAR, month = MONTH, source, tnloadtons) %>% 
   mutate(
     source = case_when(
       source == 'Atmospheric Deposition' ~ 'AD', 
@@ -169,18 +166,12 @@ tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) 
       source == 'Non-Point Source' ~ 'NPS'
     )
   ) %>% 
-  group_by(entity, YEAR, MONTH, source) %>% 
+  group_by(entity, year, month, source) %>% 
   summarise(
     tnload = sum(tnloadtons), 
     .groups = 'drop'
   ) %>% 
-  select(
-    entity,
-    SOURCE = source, 
-    YEAR, 
-    MONTH, 
-    tn_load = tnload
-  )
+  select(year, month, entity, source, tn_load = tnload)
 
 save(tnmosentdat, file = here('data/tnmosentdat.RData'))
 
@@ -190,38 +181,29 @@ save(tnmosentdat, file = here('data/tnmosentdat.RData'))
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
   left_join(clucs_lkup, by = 'CLUCSID') %>% 
-  mutate(dy = 1) %>% 
-  unite('date', year, month, dy, sep = '-', remove = T) %>% 
   mutate(
-    date = ymd(date), 
     source = 'NPS'
   ) %>% 
-  select(date, bay_segment, basin, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
+  select(year, month, bay_segment, basin, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
 
 # industrial point source
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
-  mutate(dy = 1) %>% 
-  unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
   mutate(
-    date = ymd(date), 
     source = 'IPS'
   ) %>% 
-  select(date, bay_segment, basin = BASIN, facility = facname, source, tn_load = tnloadtons)
+  select(year = Year, month = Month, bay_segment, basin = BASIN, facility = facname, source, tn_load = tnloadtons)
 
 # domestic point source  
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
-  inner_join(segidmos, by = 'bayseg') %>% 
-  mutate(dy = 1) %>% 
-  unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
+  inner_join(segidmos, by = 'bayseg') %>%
   mutate(
-    date = ymd(date), 
     source = case_when(
       grepl('REUSE$', source2) ~ 'DPS - reuse', 
       grepl('SW$', source2) ~ 'DPS - stormwater'
     )
   ) %>% 
-  select(date, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
+  select(year = Year, month = Month, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
 
 save(npsmosdat, file = here('data/npsmosdat.RData'))
 save(ipsmosdat, file = here('data/ipsmosdat.RData'))
@@ -231,24 +213,24 @@ save(dpsmosdat, file = here('data/dpsmosdat.RData'))
 npsdpsips <- list(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   enframe() %>% 
   mutate(
-    value = purrr::map(value, function(x) select(x, date, bay_segment, source, tn_load))
+    value = purrr::map(value, function(x) select(x, year, month, bay_segment, source, tn_load))
   ) %>% 
   unnest('value') %>% 
-  group_by(date, bay_segment, source) %>% 
+  group_by(year, month, bay_segment, source) %>% 
   summarise(
     tn_load = sum(tn_load), 
     .groups = 'drop'
   ) 
 
 npsdpsipsall <- npsdpsips %>% 
-  group_by(date, source) %>% 
+  group_by(year, month, source) %>% 
   summarise(
     tn_load = sum(tn_load), 
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 npsdpsips <- bind_rows(npsdpsips, npsdpsipsall) %>% 
-  rename(SOURCE = source)
+  select(year, month, bay_segment, source, tn_load)
 
 save(npsdpsips, file = here('data/npsdpsips.RData'))
 
@@ -263,8 +245,7 @@ npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   ) %>% 
   mutate(
     source = 'NPS'
-  ) %>% 
-  select(entity, year, month, source, tn_load)
+  )
 
 # industrial point source
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
@@ -279,8 +260,7 @@ ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>%
   ) %>% 
   mutate(
     source = 'PS'
-  ) %>% 
-  select(entity, year, month, source, tn_load)
+  )
 
 # domestic point source  
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
@@ -298,10 +278,10 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
     .groups = 'drop'
-  ) %>% 
-  select(entity, year, month, source, tn_load)
+  )
 
-npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat)
+npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
+  select(year, month, entity, source, tn_load)
   
 save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))
 
@@ -319,6 +299,6 @@ npsmosludat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   mutate(
     source = 'NPS'
   ) %>% 
-  select(`land use` = DESCRIPTION, bay_segment, year, month, source, tn_load)
+  select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
 
 save(npsmosludat, file = here('data/npsmosludat.RData'))
