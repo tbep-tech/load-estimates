@@ -251,4 +251,56 @@ npsdpsips <- bind_rows(npsdpsips, npsdpsipsall) %>%
   rename(SOURCE = source)
 
 save(npsdpsips, file = here('data/npsdpsips.RData'))
+
+# nps, ips, dps by entity -------------------------------------------------
+
+# non-point source
+npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
+  group_by(entity, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
+  select(entity, year, month, source, tn_load)
+
+# industrial point source
+ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
+  rename(
+    year = Year, 
+    month = Month
+  ) %>% 
+  group_by(entity, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'PS'
+  ) %>% 
+  select(entity, year, month, source, tn_load)
+
+# domestic point source  
+dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+  rename(
+    year = Year, 
+    month = Month
+  ) %>% 
+  mutate(
+    source = case_when(
+      grepl('REUSE$', source2) ~ 'DPS - reuse', 
+      grepl('SW$', source2) ~ 'DPS - stormwater'
+    )
+  ) %>% 
+  group_by(entity, source, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  select(entity, year, month, source, tn_load)
+
+npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat)
   
+save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))

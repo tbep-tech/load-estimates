@@ -26,6 +26,7 @@ data(tnmosdat)
 data(tnmosentdat)
 data(totanndat)
 data(npsdpsips)
+data(npsdpsipsent)
 
 source('R/funcs.R')
 
@@ -152,7 +153,18 @@ column(12,
         has_icon = TRUE,
         icon = "fa fa-save"
       )
-  )
+  ),
+  column(3,
+    npsdpsipsent %>%
+      download_this(
+        output_name = "TN-entity-monthly",
+        output_extension = ".xlsx",
+        button_label = "Download entity data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
+  ) 
 )
 ```
 
