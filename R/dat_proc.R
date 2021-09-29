@@ -11,9 +11,11 @@ segidann <- tibble(
 )
 
 # segment id, monthly
+# 5 is all of BCB, 6 is Terra Ceia Bay, 7 is Manatee River, 55 is BCB south
+# RA reports only BCB south so 5 is excluded here
 segidmos <- tibble(
-  bayseg = c(1, 2, 3, 4, 5, 6, 7, 55),
-  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+  bayseg = c(1, 2, 3, 4, 6, 7, 55),
+  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
 # coastal land use code lookup
@@ -107,7 +109,7 @@ totanndat <- tntots %>%
 
 save(totanndat, file = 'data/totanndat.RData', compress = 'xz')
 
-# monthly tn estimates ----------------------------------------------------
+# all monthly tn estimates ------------------------------------------------
 
 # source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
 mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
@@ -152,11 +154,41 @@ tnmosdat <- bind_rows(mosdat, totsmo) %>%
 
 save(tnmosdat, file = here('data/tnmosdat.RData'))
 
+
+# all monthly tn estimates by entity --------------------------------------
+
+# source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
+tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
+  select(entity, YEAR, MONTH, source, tnloadtons) %>% 
+  mutate(
+    source = case_when(
+      source == 'Atmospheric Deposition' ~ 'AD', 
+      source %in% c('Springs', 'Ground Water') ~ 'GWS', 
+      source %in% c('PS - Domestic - REUSE', 'PS - Domestic - SW') ~ 'DPS', 
+      source %in% c('PS - Industrial', 'Material Losses') ~ 'IPS', 
+      source == 'Non-Point Source' ~ 'NPS'
+    )
+  ) %>% 
+  group_by(entity, YEAR, MONTH, source) %>% 
+  summarise(
+    tnload = sum(tnloadtons), 
+    .groups = 'drop'
+  ) %>% 
+  select(
+    entity,
+    SOURCE = source, 
+    YEAR, 
+    MONTH, 
+    tn_load = tnload
+  )
+
+save(tnmosentdat, file = here('data/tnmosentdat.RData'))
+
 # monthly ips, dps, nps ---------------------------------------------------
 
 # non-point source
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
-  left_join(segidmos, by = 'bayseg') %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
   left_join(clucs_lkup, by = 'CLUCSID') %>% 
   mutate(dy = 1) %>% 
   unite('date', year, month, dy, sep = '-', remove = T) %>% 
@@ -168,7 +200,7 @@ npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
 
 # industrial point source
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
-  left_join(segidmos, by = 'bayseg') %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
   mutate(dy = 1) %>% 
   unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
   mutate(
@@ -179,7 +211,7 @@ ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>%
 
 # domestic point source  
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
-  left_join(segidmos, by = 'bayseg') %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
   mutate(dy = 1) %>% 
   unite('date', Year, Month, dy, sep = '-', remove = T) %>% 
   mutate(

@@ -19,9 +19,11 @@ library(colorspace)
 library(reactable)
 library(downloadthis)
 library(tools)
+library(shiny)
 
 data(tnanndat)
 data(tnmosdat)
+data(tnmosentdat)
 data(totanndat)
 data(npsdpsips)
 
@@ -62,18 +64,23 @@ knitr::include_graphics('figs/segmap.PNG')
 ## Total nitrogen (annual, 1985 - 2020) {.tabset .tabset-pills}
 
 ```{r}
-tnanndat %>%
-  download_this(
-    output_name = "TN-annual",
-    output_extension = ".xlsx",
-    button_label = "Download data",
-    button_type = "warning",
-    has_icon = TRUE,
-    icon = "fa fa-save"
+column(12, 
+  column(3, 
+    tnanndat %>%
+      download_this(
+        output_name = "TN-annual",
+        output_extension = ".xlsx",
+        button_label = "Download plot data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
   )
+)
 ```
 
-<br>
+<br></br>
+<br></br>
 
 ### By source
 
@@ -90,18 +97,34 @@ rct_tab(tnanndat, dtvar = 'YEAR', typ = 'tn')
 ## Total nitrogen (monthly, 2017 - 2020) {.tabset .tabset-pills}
 
 ```{r}
-tnmosdat %>%
-  download_this(
-    output_name = "TN-monthly",
-    output_extension = ".xlsx",
-    button_label = "Download data",
-    button_type = "warning",
-    has_icon = TRUE,
-    icon = "fa fa-save"
-  )
+column(12,
+  column(3, 
+    tnmosdat %>%
+      download_this(
+        output_name = "TN-monthly",
+        output_extension = ".xlsx",
+        button_label = "Download plot data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
+    ), 
+  column(3,
+    tnmosentdat %>%
+      download_this(
+        output_name = "TN-entity-monthly",
+        output_extension = ".xlsx",
+        button_label = "Download entity data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
+    )     
+)
 ```
 
-<br>
+<br></br>
+<br></br>
 
 ### By source
 
@@ -118,18 +141,23 @@ rct_tab(tnmosdat, dtvar = 'date', typ = 'tn')
 ## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset .tabset-pills}
 
 ```{r}
-npsdpsips %>%
-  download_this(
-    output_name = "TN-select-sources-monthly",
-    output_extension = ".xlsx",
-    button_label = "Download data",
-    button_type = "warning",
-    has_icon = TRUE,
-    icon = "fa fa-save"
+column(12, 
+  column(3, 
+    npsdpsips %>%
+      download_this(
+        output_name = "TN-select-sources-monthly",
+        output_extension = ".xlsx",
+        button_label = "Download plot data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
   )
+)
 ```
 
-<br>
+<br></br>
+<br></br>
 
 ### By source
 
@@ -146,18 +174,23 @@ rct_tab(npsdpsips, dtvar = 'date', typ = 'tn')
 ## Totals {.tabset .tabset-pills}
 
 ```{r}
-totanndat %>%
-  download_this(
-    output_name = "hydro-annual",
-    output_extension = ".xlsx",
-    button_label = "Download data",
-    button_type = "warning",
-    has_icon = TRUE,
-    icon = "fa fa-save"
+column(12, 
+  column(3,
+    totanndat %>%
+      download_this(
+        output_name = "hydro-annual",
+        output_extension = ".xlsx",
+        button_label = "Download plot data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
   )
+)
 ```
 
-<br>
+<br></br>
+<br></br>
 
 ### Total Nitrogen
 
