@@ -62,7 +62,7 @@ dat <- bind_rows(tots, dat)
 tnanndat <- dat %>% 
   select(year, bay_segment, source, tn_load)
 
-save(tnanndat, file = 'data/tnanndat.RData', compress = 'xz')
+save(tnanndat, file = 'data/tnanndat.RData', version = 2)
 
 # annual totals -----------------------------------------------------------
 
@@ -109,7 +109,7 @@ totanndat <- tntots %>%
   mutate(tnhy =  tn_load / hy_load) %>% 
   select(year, bay_segment, tn_load, hy_load, tnhy)
 
-save(totanndat, file = 'data/totanndat.RData', compress = 'xz')
+save(totanndat, file = 'data/totanndat.RData', version = 2)
 
 # all monthly tn estimates ------------------------------------------------
 
@@ -150,7 +150,7 @@ totsmo <- mosdat %>%
 tnmosdat <- bind_rows(mosdat, totsmo) %>% 
   select(year, month, bay_segment, source, tn_load)
 
-save(tnmosdat, file = here('data/tnmosdat.RData'))
+save(tnmosdat, file = here('data/tnmosdat.RData'), version = 2)
 
 # all monthly tn estimates by entity --------------------------------------
 
@@ -173,7 +173,7 @@ tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) 
   ) %>% 
   select(year, month, entity, source, tn_load = tnload)
 
-save(tnmosentdat, file = here('data/tnmosentdat.RData'))
+save(tnmosentdat, file = here('data/tnmosentdat.RData'), version = 2)
 
 # monthly ips, dps, nps ---------------------------------------------------
 
@@ -205,9 +205,9 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
   ) %>% 
   select(year = Year, month = Month, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
 
-save(npsmosdat, file = here('data/npsmosdat.RData'))
-save(ipsmosdat, file = here('data/ipsmosdat.RData'))
-save(dpsmosdat, file = here('data/dpsmosdat.RData'))
+save(npsmosdat, file = here('data/npsmosdat.RData'), version = 2)
+save(ipsmosdat, file = here('data/ipsmosdat.RData'), version = 2)
+save(dpsmosdat, file = here('data/dpsmosdat.RData'), version = 2)
 
 # get tn by bay segment only
 npsdpsips <- list(npsmosdat, ipsmosdat, dpsmosdat) %>% 
@@ -232,7 +232,7 @@ npsdpsipsall <- npsdpsips %>%
 npsdpsips <- bind_rows(npsdpsips, npsdpsipsall) %>% 
   select(year, month, bay_segment, source, tn_load)
 
-save(npsdpsips, file = here('data/npsdpsips.RData'))
+save(npsdpsips, file = here('data/npsdpsips.RData'), version = 2)
 
 # nps, ips, dps by entity -------------------------------------------------
 
@@ -283,7 +283,7 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, entity, source, tn_load)
   
-save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))
+save(npsdpsipsent, file = here('data/npsdpsipsent.RData'), version = 2)
 
 # nps tn by land use ------------------------------------------------------
 
@@ -301,4 +301,4 @@ npsmosludat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   ) %>% 
   select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
 
-save(npsmosludat, file = here('data/npsmosludat.RData'))
+save(npsmosludat, file = here('data/npsmosludat.RData'), version = 2)
