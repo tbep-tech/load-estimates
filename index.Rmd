@@ -10,6 +10,14 @@ css: styles.css
 
 Loading estimates for total nitrogen (tons / yr or tons / mo) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
+Load estimates are partitioned into one of five categories by source: 
+
+* __AD__: atmospheric deposition
+* __DPS__: domestic point source
+* __GWS__: groundwater source
+* __IPS__: industrial point source
+* __NPS__: nonpoint source
+
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
@@ -43,14 +51,6 @@ levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middl
 ```
 
 ## Background 
-
-Total nitrogen load estimates are partitioned into one of five categories by source: 
-
-* __AD__: atmospheric deposition
-* __DPS__: domestic point source
-* __GWS__: groundwater source
-* __IPS__: industrial point source
-* __NPS__: nonpoint source
 
 Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2020 (current reasonable assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2020 for select sources (DPS reuse, DPS stormwater, IPS, NPS).  The totals tab shows annual results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
 
