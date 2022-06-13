@@ -90,7 +90,7 @@ column(12,
 
 ### By source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(tnanndat, xval = 'year', src = 'all')
 ```
 
@@ -143,7 +143,7 @@ column(12,
 
 ### Total nitrogen by source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(mosdat, xval = 'date', src = 'all', yval = 'tn_load')
 ```
 
@@ -155,7 +155,7 @@ rct_tab(mosdat, dtvar = 'date', typ = 'tn', val = 'tn_load')
 
 ### Total phosphorus by source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(mosdat, xval = 'date', src = 'all', yval = 'tp_load')
 ```
 
@@ -167,7 +167,7 @@ rct_tab(mosdat, dtvar = 'date', typ = 'tn', val = 'tp_load')
 
 ### Total suspended solids by source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(mosdat, xval = 'date', src = 'all', yval = 'tss_load')
 ```
 
@@ -179,7 +179,7 @@ rct_tab(mosdat, dtvar = 'date', typ = 'tn', val = 'tss_load')
 
 ### BOD by source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(mosdat, xval = 'date', src = 'all', yval = 'bod_load')
 ```
 
@@ -258,7 +258,7 @@ column(12,
 
 ### By source
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 tnsrc_plo(npsdpsips, xval = 'date', src = 'select')
 ```
 
@@ -358,19 +358,19 @@ column(12,
 
 ### Total Nitrogen
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 ldtot_plo(totanndat, yval = 'tn_load')
 ```
 
 ### Hydrology
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 ldtot_plo(totanndat, yval = 'hy_load')
 ```
 
 ### Total Nitrogen vs Hydrology
 
-```{r, out.width = '100%', out.height='850px'}
+```{r, out.width = '100%', out.height='1000px'}
 ldtot_plo(totanndat, yval = 'tnhy', addlns = T)
 ```
 

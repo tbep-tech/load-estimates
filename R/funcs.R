@@ -99,7 +99,7 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
 
   }
   
-  out <- subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  out <- subplot(p1, p2, p3, p4, p5, p6, shareX = F, nrows = length(levs), shareY = F, titleY = T) %>%
     layout(
       xaxis = list(title = NA, gridcolor = '#FFFFFF'),
       barmode = 'stack',
@@ -183,7 +183,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F)
     
   }
 
-  out <- subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
+  out <- subplot(p1, p2, p3, p4, p5, p6, shareX = F, nrows = length(levs), shareY = F, titleY = T) %>%
     layout(
       xaxis = list(title = NA, gridcolor = '#FFFFFF')
     )
