@@ -6,7 +6,7 @@ css: styles.css
 
 # TAMPA BAY LOAD ESTIMATES {.tabset}
 
-`r Sys.time()` 
+Latest build: `r Sys.time()` 
 
 Loading estimates for total nitrogen (tons / yr or tons / mo) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
 
