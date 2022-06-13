@@ -292,11 +292,11 @@ dat <- npsmosdat %>%
   select(date, lu, `Old Tampa Bay`, `Hillsborough Bay`, `Middle Tampa Bay`, `Lower Tampa Bay`, `Remainder Lower Tampa Bay`)
 
 toplo <- highlight_key(dat)
-filter_select("lusel", "Select land use", toplo, ~lu, multiple = F)
+filter_select("filter", "Select land use", toplo, ~lu, multiple = F)
 
 showleg <- F
 cols <- qualitative_hcl(5, palette = "Dynamic")
-plot_ly(toplo) %>%
+plot_ly(toplo, alpha = 1, fill = 'tonexty') %>%
   add_markers(x = ~date, y = ~`Remainder Lower Tampa Bay`, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp1', name = 'Remainder Lower Tampa Bay') %>% 
   add_markers(x = ~date, y = ~`Lower Tampa Bay`, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp2', name = 'Lower Tampa Bay') %>%
   add_markers(x = ~date, y = ~`Middle Tampa Bay`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp3', name = 'Middle Tampa Bay') %>%
@@ -314,6 +314,13 @@ datatable(toplo, extensions="Scroller", style="bootstrap", class="compact", widt
     options=list(deferRender=TRUE, scrollY=300, scroller=TRUE), 
     colnames = c('Date', 'Land use', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay'))
   
+```
+
+```{js}
+function filter_default() {
+    document.getElementById("filter").getElementsByClassName("selectized")[0].selectize.setValue("High Density Residential", false);
+}
+window.onload = filter_default;
 ```
 
 ### Metadata

@@ -4,8 +4,11 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
   xval <- match.arg(xval)
 
   srcs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
-  if(src == 'select')
+  cols <- c('AD' = '#33CC33', 'DPS' = '#00B0F0', 'GWS' = '#EB641B', 'IPS' = '#C0504D', 'NPS' = '#FFFF99')
+  if(src == 'select'){
     srcs <- c('DPS - reuse', 'DPS - end of pipe', 'IPS', 'NPS')
+    cols <- c('DPS - reuse' = '#1F497D', 'DPS - end of pipe' = '#00B0F0','IPS' = '#C0504D', 'NPS' = '#FFFF99')
+  }
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
@@ -13,8 +16,6 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
     bay_segment = levs[-c(1, 6)], 
     ln = c(486, 1451, 799, 349)
   )
-  
-  cols <- qualitative_hcl(length(unique(datin$source)), palette = "Dynamic")
 
   ttl <- 'Total Nitrogen (tons / yr)'
   if(xval == 'date'){
@@ -48,18 +49,18 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
     showleg <- F
     if(lev == 1)
       showleg <- T
-    
+
     if(src == 'all'){
-      p <- plot_ly(toplo)  %>% 
-        add_markers(x = ~dt, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+      p <- plot_ly(toplo, alpha = 1, fill = 'tonexty')  %>% 
+        add_markers(x = ~dt, y = ~NPS, color = I(cols[['NPS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
-        add_markers(x = ~dt, y = ~IPS, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~IPS, color = I(cols[['IPS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp4', name = 'IPS') %>% 
-        add_markers(x = ~dt, y = ~GWS, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~GWS, color = I(cols[['GWS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp3', name = 'GWS') %>% 
-        add_markers(x = ~dt, y = ~DPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~DPS, color = I(cols[['DPS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
-        add_markers(x = ~dt, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~AD, color = I(cols[['AD']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp1', name = 'AD') 
     
       # horizontal ref tn line
@@ -68,21 +69,21 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
         ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
         
         p <- p %>%  
-          add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+          add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F, alpha = 0)
         
       }
         
     }
     
     if(src == 'select')
-      p <- plot_ly(toplo)  %>% 
-        add_markers(x = ~dt, y = ~`DPS - reuse`, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+      p <- plot_ly(toplo, alpha = 1, fill = 'tonexty')  %>% 
+        add_markers(x = ~dt, y = ~`DPS - reuse`, color = I(cols[['DPS - reuse']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp4', name = 'DPS - reuse') %>%   
-        add_markers(x = ~dt, y = ~`DPS - end of pipe`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~`DPS - end of pipe`, color = I(cols[['DPS - end of pipe']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp3', name = 'DPS - end of pipe') %>% 
-        add_markers(x = ~dt, y = ~IPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~IPS, color = I(cols[['IPS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp2', name = 'IPS') %>% 
-        add_markers(x = ~dt, y = ~NPS, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+        add_markers(x = ~dt, y = ~NPS, color = I(cols[['NPS']]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp1', name = 'NPS') 
     
     p <- p %>% 
