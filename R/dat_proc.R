@@ -212,7 +212,7 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
   mutate(
     source = case_when(
       grepl('REUSE$', source2) ~ 'DPS - reuse', 
-      grepl('SW$', source2) ~ 'DPS - stormwater'
+      grepl('SW$', source2) ~ 'DPS - end of pipe'
     )
   ) %>% 
   select(year = Year, month = Month, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
@@ -283,7 +283,7 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
   mutate(
     source = case_when(
       grepl('REUSE$', source2) ~ 'DPS - reuse', 
-      grepl('SW$', source2) ~ 'DPS - stormwater'
+      grepl('SW$', source2) ~ 'DPS - end of pipe'
     )
   ) %>% 
   group_by(entity, source, year, month) %>% 

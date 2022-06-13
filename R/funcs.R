@@ -5,7 +5,7 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
 
   srcs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
   if(src == 'select')
-    srcs <- c('DPS - reuse', 'DPS - stormwater', 'IPS', 'NPS')
+    srcs <- c('DPS - reuse', 'DPS - end of pipe', 'IPS', 'NPS')
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
@@ -78,8 +78,8 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
       p <- plot_ly(toplo)  %>% 
         add_markers(x = ~dt, y = ~`DPS - reuse`, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp4', name = 'DPS - reuse') %>%   
-        add_markers(x = ~dt, y = ~`DPS - stormwater`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
-                    showlegend = showleg, legendgroup = 'grp3', name = 'DPS - stormwater') %>% 
+        add_markers(x = ~dt, y = ~`DPS - end of pipe`, color = I(cols[3]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
+                    showlegend = showleg, legendgroup = 'grp3', name = 'DPS - end of pipe') %>% 
         add_markers(x = ~dt, y = ~IPS, color = I(cols[2]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp2', name = 'IPS') %>% 
         add_markers(x = ~dt, y = ~NPS, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
