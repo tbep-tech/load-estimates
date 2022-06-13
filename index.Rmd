@@ -56,12 +56,20 @@ Source estimates for total nitrogen are shown annually from 1985 to present, by 
 
 Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
-Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)):
+Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view), shown on relevant annual load plots):
 
 * Old Tampa Bay: 486 tons/yr
 * Hillsborough Bay: 1451 tons/yr
 * Middle Tampa Bay: 799 tons/yr
 * Lower Tampa Bay:  349 tons/yr
+
+Hydrologically-normalized load targets as a ratio of total nitrogen to hydrologic load  (nitrogen delivery ratios) for major bay segments are also shown on relevant plots and are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)):
+
+* Old Tampa Bay: 1.08
+* Hillsborough Bay: 1.62
+* Middle Tampa Bay: 1.24
+* Lower Tampa Bay:  0.97
+* Remainder of Lower Tampa Bay: 1.59
 
 ```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtest of Janicki Environmental, Inc.'}
 knitr::include_graphics('figs/segmap.PNG')
@@ -91,7 +99,7 @@ column(12,
 ### By source
 
 ```{r, out.width = '100%', out.height='1000px'}
-tnsrc_plo(tnanndat, xval = 'year', src = 'all')
+tnsrc_plo(tnanndat, xval = 'year', src = 'all', addtnlns = T)
 ```
 
 ### Table
@@ -359,7 +367,7 @@ column(12,
 ### Total Nitrogen
 
 ```{r, out.width = '100%', out.height='1000px'}
-ldtot_plo(totanndat, yval = 'tn_load')
+ldtot_plo(totanndat, yval = 'tn_load', addtnlns = T)
 ```
 
 ### Hydrology

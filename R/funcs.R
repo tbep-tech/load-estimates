@@ -1,5 +1,5 @@
 #' plot tn load by source, annual or monthly
-tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'), yval = 'tn_load'){
+tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'), yval = 'tn_load', addtnlns = F){
 
   xval <- match.arg(xval)
 
@@ -8,6 +8,11 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
     srcs <- c('DPS - reuse', 'DPS - stormwater', 'IPS', 'NPS')
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+  
+  lntndf <- data.frame(
+    bay_segment = levs[-c(1, 6)], 
+    ln = c(486, 1451, 799, 349)
+  )
   
   cols <- qualitative_hcl(length(unique(datin$source)), palette = "Dynamic")
 
@@ -44,7 +49,7 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
     if(lev == 1)
       showleg <- T
     
-    if(src == 'all')
+    if(src == 'all'){
       p <- plot_ly(toplo)  %>% 
         add_markers(x = ~dt, y = ~NPS, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp5', name = 'NPS') %>%   
@@ -56,7 +61,19 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
                     showlegend = showleg, legendgroup = 'grp2', name = 'DPS') %>% 
         add_markers(x = ~dt, y = ~AD, color = I(cols[1]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
                     showlegend = showleg, legendgroup = 'grp1', name = 'AD') 
-      
+    
+      # horizontal ref tn line
+      if(!lev %in% c(1, 6) & addtnlns){
+        
+        ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
+        
+        p <- p %>%  
+          add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+        
+      }
+        
+    }
+    
     if(src == 'select')
       p <- plot_ly(toplo)  %>% 
         add_markers(x = ~dt, y = ~`DPS - reuse`, color = I(cols[4]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), 
@@ -111,7 +128,7 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
 }
 
 #' plot total load as tn, hyd, or ratio, annual or monthly
-ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F){
+ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F, addtnlns = F){
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
@@ -119,6 +136,11 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F)
   lndf <- data.frame(
     bay_segment = levs[-1], 
     ln = c(1.08, 1.62, 1.24, 0.97, 1.59)
+  )
+  
+  lntndf <- data.frame(
+    bay_segment = levs[-c(1, 6)], 
+    ln = c(486, 1451, 799, 349)
   )
   
   ylbs <- tibble(
@@ -171,6 +193,16 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F)
     if(lev != 1 & addlns){
       
       ln <- lndf[lndf$bay_segment %in% levs[lev], 'ln']
+      
+      p <- p %>%  
+        add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+      
+    }
+    
+    # horizontal ref tn line
+    if(!lev %in% c(1, 6) & addtnlns){
+      
+      ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
       
       p <- p %>%  
         add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
