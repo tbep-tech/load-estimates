@@ -111,11 +111,11 @@ totanndat <- tntots %>%
 
 save(totanndat, file = 'data/totanndat.RData', version = 2)
 
-# all monthly tn estimates ------------------------------------------------
+# all monthly tn, tp, tss, bod estimates ----------------------------------
 
 # source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
 mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
-  select(bayseg, year = YEAR, month = MONTH, source, tnloadtons) %>% 
+  select(bayseg, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
   mutate(
     source = case_when(
       source == 'Atmospheric Deposition' ~ 'AD', 
@@ -128,6 +128,9 @@ mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>%
   group_by(bayseg, year, month, source) %>% 
   summarise(
     tnload = sum(tnloadtons), 
+    tpload = sum(tploadtons), 
+    tssload = sum(tssloadtons), 
+    bodload = sum(bodloadtons),
     .groups = 'drop'
   ) %>% 
   left_join(segidmos, by = 'bayseg') %>% 
@@ -136,6 +139,9 @@ mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>%
     year, 
     month, 
     tn_load = tnload, 
+    tp_load = tpload,
+    tss_load = tssload, 
+    bod_load = bodload,
     bay_segment
   )
 
@@ -143,20 +149,23 @@ totsmo <- mosdat %>%
   group_by(year, month, source) %>% 
   summarise(
     tn_load = sum(tn_load),
+    tp_load = sum(tp_load), 
+    tss_load = sum(tss_load), 
+    bod_load = sum(bod_load),
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-tnmosdat <- bind_rows(mosdat, totsmo) %>% 
-  select(year, month, bay_segment, source, tn_load)
+mosdat <- bind_rows(mosdat, totsmo) %>% 
+  select(year, month, bay_segment, source, tn_load, tp_load, tss_load, bod_load)
 
-save(tnmosdat, file = here('data/tnmosdat.RData'), version = 2)
+save(mosdat, file = here('data/mosdat.RData'), version = 2)
 
-# all monthly tn estimates by entity --------------------------------------
+# all monthly tn, tp, tss, bod estimates by entity ------------------------
 
 # source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
-tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
-  select(entity, year = YEAR, month = MONTH, source, tnloadtons) %>% 
+mosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
+  select(entity, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
   mutate(
     source = case_when(
       source == 'Atmospheric Deposition' ~ 'AD', 
@@ -169,11 +178,14 @@ tnmosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) 
   group_by(entity, year, month, source) %>% 
   summarise(
     tnload = sum(tnloadtons), 
+    tpload = sum(tploadtons), 
+    tssload = sum(tssloadtons), 
+    bodload = sum(bodloadtons),
     .groups = 'drop'
   ) %>% 
   select(year, month, entity, source, tn_load = tnload)
 
-save(tnmosentdat, file = here('data/tnmosentdat.RData'), version = 2)
+save(mosentdat, file = here('data/mosentdat.RData'), version = 2)
 
 # monthly ips, dps, nps ---------------------------------------------------
 

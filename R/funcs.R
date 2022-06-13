@@ -1,6 +1,6 @@
 #' plot tn load by source, annual or monthly
-tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select')){
-  
+tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'), yval = 'tn_load'){
+
   xval <- match.arg(xval)
 
   srcs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
@@ -13,24 +13,32 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'))
 
   ttl <- 'Total Nitrogen (tons / yr)'
   if(xval == 'date'){
-    ttl <- 'Total Nitrogen (tons / mo)'
-
+    
+    ttls <- c('tn_load' = 'Total Nitrogen (tons / mo)', 
+              'tp_load' = 'Total Phosphorus (tons / mo)',
+              'tss_load' = 'Total Suspended Solids (tons / mo)', 
+              'bod_load' = 'Biological Oxygen Demands (tons / mo)')
+    
+    ttl <- ttls[[yval]]
+    
     datin <- datin %>% 
       mutate(dy = 1) %>% 
       unite('date', year, month, dy, sep = '-', remove = T) %>% 
       mutate(
         date = ymd(date)
-      )
+      ) %>% 
+      select(date, bay_segment, source, !!yval)
     
   }
   
   for(lev in seq_along(levs)){
 
     toplo <- datin %>% 
+      select(matches('year|date'), bay_segment, source, !!yval) %>% 
       filter(bay_segment %in% !!levs[lev]) %>% 
       rename(dt = !!xval) %>% 
-      mutate(source = factor(source, levels = srcs)) %>% 
-      spread(source, tn_load, fill = 0, drop = F)
+      mutate(source = factor(source, levels = srcs)) %>%
+      spread(source, !!yval, fill = 0, drop = F)
     
     showleg <- F
     if(lev == 1)
@@ -174,7 +182,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F)
     assign(nm, p)
     
   }
-  
+
   out <- subplot(p1, p2, p3, p4, p5, p6, shareX = T, nrows = length(levs), shareY = F, titleY = T) %>%
     layout(
       xaxis = list(title = NA, gridcolor = '#FFFFFF')
@@ -185,7 +193,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F)
 }
 
 #' reactable table summaries
-rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots')){
+rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots'), val = 'tn_load'){
   
   dtvar <- match.arg(dtvar)
   typ <- match.arg(typ)
@@ -205,8 +213,8 @@ rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots')){
     
     totab <- datin %>% 
       rename(dt = !!dtvar) %>% 
-      select(bay_segment, dt, source, tn_load) %>% 
-      pivot_wider(names_from = source, values_from = tn_load) %>% 
+      select(bay_segment, dt, source, !!val) %>% 
+      pivot_wider(names_from = source, values_from = !!val) %>% 
       mutate(
         Total = rowSums(select(., -dt, -bay_segment), na.rm = T), 
         dt = gsub('\\-[0-9]*$', '', dt)
