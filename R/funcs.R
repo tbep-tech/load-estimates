@@ -13,8 +13,8 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
   lntndf <- data.frame(
-    bay_segment = levs[-c(1, 6)], 
-    ln = c(486, 1451, 799, 349)
+    bay_segment = levs[-1], 
+    ln = c(486, 1451, 799, 349, 629)
   )
 
   ttl <- 'Total Nitrogen (tons / yr)'
@@ -64,7 +64,7 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
                     showlegend = showleg, legendgroup = 'grp1', name = 'AD') 
     
       # horizontal ref tn line
-      if(!lev %in% c(1, 6) & addtnlns){
+      if(lev != 1 & addtnlns){
         
         ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
         
@@ -140,8 +140,8 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
   )
   
   lntndf <- data.frame(
-    bay_segment = levs[-c(1, 6)], 
-    ln = c(486, 1451, 799, 349)
+    bay_segment = levs[-1], 
+    ln = c(486, 1451, 799, 349, 629)
   )
   
   ylbs <- tibble(
@@ -201,7 +201,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
     }
     
     # horizontal ref tn line
-    if(!lev %in% c(1, 6) & addtnlns){
+    if(lev != 1 & addtnlns){
       
       ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
       

@@ -62,7 +62,7 @@ Annual load targets for total nitrogen (tons/yr) by major bay segments are as fo
 * Hillsborough Bay: 1451 tons/yr
 * Middle Tampa Bay: 799 tons/yr
 * Lower Tampa Bay:  349 tons/yr
-* Remainder of Lower Tampa Bay: No target
+* Remainder of Lower Tampa Bay: 629 tons/yr
 
 Hydrologically-normalized load targets as a ratio of total nitrogen to hydrologic load  (nitrogen delivery ratios) for major bay segments are also shown on relevant plots and are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)):
 
