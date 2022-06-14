@@ -76,6 +76,12 @@ Hydrologically-normalized load targets as a ratio of total nitrogen to hydrologi
 knitr::include_graphics('figs/segmap.PNG')
 ```
 
+## Summary
+
+```{r, fig.cap = "Total nitrogen load for Tampa Bay by decade."}
+knitr::include_graphics('figs/3dload_pies.png')
+```
+
 ## Total nitrogen (annual, 1985 - 2020) {.tabset .tabset-pills}
 
 ```{r}
