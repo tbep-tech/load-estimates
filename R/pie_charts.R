@@ -31,17 +31,33 @@ dev.off()
 
 # plotrix 3d --------------------------------------------------------------
 
-srcs <- c('AD', 'DPS', 'GWS', 'IPS', 'NPS')
-labs <- c('Atmospheric Deposition', 'Domestic Point Source', 'Groundwater & Springs', 'Industrial Point Sources', 'Nonpoint Sources')
-cols <- c('AD' = I('#33CC33'), 'DPS' = I('#00B0F0'), 'GWS' = I('#EB641B'), 'IPS' = I('#C0504D'), 'NPS' = I('#FFFF99'))
+srcs <- c('AD', 'DPS', 'IPS', 'NPS', 'GWS')
+labs <- c('Atmospheric Deposition', 'Domestic Point Source', 'Industrial Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
+cols <- c('AD' = I('#33CC33'), 'DPS' = I('#00B0F0'), 'IPS' = I('darkred'), 'NPS' = I('#FFFF99'), 'GWS' = I('#EB641B'))
 names(cols) <- labs
+yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s')
 
+# from TBEP #04-94
+# totals are kg/yr
+historic <- tibble(
+    source = c('Atmospheric Deposition', 'Domestic Point Source', 'Industrial Point Sources', 'Nonpoint Sources', 'Groundwater & Springs'),
+    yearcat = '1970s',
+    tot = c(967059.21, 443613.465, 5418616.005, 2150028.45, 5443.11), 
+    nyr = 1
+  ) %>% 
+  mutate(
+    yearcat = factor(yearcat, levels = yrlabs),
+    per = 100 * tot / sum(tot), 
+    kgyr = sum(tot) / nyr / 1e6
+  )
+  
+# load in tons, convert to kg
 toplo <- tnanndat %>% 
   filter(bay_segment %in% 'All Segments (- N. BCB)') %>% 
   mutate(
     yearcat = cut(year, 
-                  breaks = c(-Inf, 1990, 2000, 2010, Inf), 
-                  labels = c('1985-1989', '1990s', '2000s', '2010s'), 
+                  breaks = c(-Inf, 1970, 1990, 2000, 2010, Inf), 
+                  labels = yrlabs, 
                   right = F) ,
     source = factor(source, levels = srcs, labels = labs)
   ) %>% 
@@ -59,38 +75,40 @@ toplo <- tnanndat %>%
     kgyr = kgyr / 1e6
   ) %>% 
   ungroup %>% 
+  bind_rows(historic) %>% 
   mutate(
     rad = rescale(kgyr, newrange = c(0.5, 1.4)), 
-    lab = gsub('0', '< 1', round(per, 0)), 
+    lab = gsub('^0$', '< 1', round(per, 0)), 
     lab = paste0(lab, '%'), 
     ttl = paste0(yearcat, ': ', round(kgyr, 1), ' mill kg/yr')
   )
 
-png(here('figs/3dload_pies.png'), height = 4.75, width = 8, res = 300, units = 'in')
+png(here('figs/3dload_pies.png'), height = 3, width = 9, res = 500, units = 'in')
 
-par(mfrow = c(2, 2), mar = c(1, 0, 1, 0))
+par(mfrow = c(1, 2), mar = c(1, 0, 1, 0), xpd = NA)
 
-for(i in levels(toplo$yearcat)){
-  
-  tmp <- toplo %>% 
+for(i in c('1970s', '2010s')){
+
+  tmp <- toplo %>%
     filter(yearcat == i)
-  
+
   rad <- unique(tmp$rad)
   ttl <- unique(tmp$ttl)
-  
+
   p <- pie3D(tmp$tot, mar = c(0, 6, 0, 6),
              col = cols,
              radius = rad,
-             theta = 0.5,
-             explode = 0.2,
-             height = 0.1,
+             theta = 0.9,
+             explode = 0.1,
+             height = 0.075,
              shade = 0.8)
-  pie3D.labels(p, labels = tmp$lab, labelrad = rad + 0.5, labelcex = 1)
+  pie3D.labels(p, labels = tmp$lab, theta = 0.9, labelrad = rad + 0.4, labelcex = 1)
   title(ttl)
-  
+
 }
 
-legend(x = -4.5, -0.75, ncol = 3, legend = labs, xpd = NA, fill = cols, box.col = NA)
+ord <- matrix(1:6, nrow = 2, ncol = 3, byrow = T)
+legend(x = -5.5, y = -1, ncol = 3, legend = na.omit(rev(labs)[ord]), xpd = NA, fill = na.omit(rev(cols)[ord]), box.col = NA)
 
 dev.off()
 
