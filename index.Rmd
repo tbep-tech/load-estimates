@@ -514,3 +514,5 @@ Data from the __Download plot data__ button includes the following:
 * __*tn_load*__: total nitrogen load in tons / year
 * __*hy_load*__: hydrologic load in million cubic meters / year
 * __*tnhy*__: ratio between total nitrogen and hydrologic loads
+
+<script type="text/javascript" src="js/iframeResizer.contentWindow.min.js"></script>
