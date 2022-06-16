@@ -4,20 +4,6 @@ output:
 css: styles.css
 ---
 
-# TAMPA BAY LOAD ESTIMATES {.tabset}
-
-Latest build: `r Sys.time()` 
-
-Loading estimates for total nitrogen (tons / yr or tons / mo) and hydrologic (million m3 / yr) inputs to Tampa Bay.  All estimates from Janicki Environmental. Source content [here](https://github.com/tbep-tech/load-estimates).
-
-Load estimates are partitioned into one of five categories by source: 
-
-* __AD__: atmospheric deposition
-* __DPS__: domestic point source
-* __GWS__: groundwater source
-* __IPS__: industrial point source
-* __NPS__: nonpoint source
-
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
@@ -34,6 +20,7 @@ library(DT)
 library(scales)
 library(plotrix)
 library(here)
+library(showtext)
 
 data(tnanndat)
 data(mosdat)
@@ -44,6 +31,13 @@ data(npsdpsips)
 data(npsdpsipsent)
 data(npsmosludat)
 
+# get font
+font_add_google("Roboto", "roboto")#, regular = 'C:/Windows/Fonts/Roboto.ttf')
+fml <- "roboto"
+
+showtext_auto()
+showtext_opts(dpi = 500)
+
 source('R/funcs.R')
 
 levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
@@ -53,33 +47,9 @@ levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middl
 # writeLines(styles, 'styles.css')
 ```
 
-## Background 
+# {.tabset .tabset-fade .tabset-pills}
 
-Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2020 (current reasonable assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2020 for select sources (DPS reuse, DPS end of pipe, IPS, NPS).  The totals tab shows annual results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
-
-Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
-
-Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view), shown on relevant annual load plots):
-
-* Old Tampa Bay: 486 tons/yr
-* Hillsborough Bay: 1451 tons/yr
-* Middle Tampa Bay: 799 tons/yr
-* Lower Tampa Bay:  349 tons/yr
-* Remainder of Lower Tampa Bay: 629 tons/yr
-
-Hydrologically-normalized load targets as a ratio of total nitrogen to hydrologic load  (nitrogen delivery ratios) for major bay segments are also shown on relevant plots and are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)):
-
-* Old Tampa Bay: 1.08
-* Hillsborough Bay: 1.62
-* Middle Tampa Bay: 1.24
-* Lower Tampa Bay:  0.97
-* Remainder of Lower Tampa Bay: 1.59
-
-```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtest of Janicki Environmental, Inc.'}
-knitr::include_graphics('figs/segmap.PNG')
-```
-
-## Summary
+## Summary 
 
 ```{r, results = 'hide'}
 srcs <- c('AD', 'DPS', 'IPS', 'NPS', 'GWS')
@@ -134,7 +104,7 @@ toplo <- tnanndat %>%
     ttl = paste0(yearcat, ': ', round(kgyr, 1), ' mill kg/yr')
   )
 
-png(here('figs/3dload_pies.png'), height = 3, width = 9, res = 500, units = 'in')
+png(here('figs/3dload_pies.png'), height = 3, width = 9, units = 'in', family = fml, res = 500)
 
 par(mfrow = c(1, 2), mar = c(1, 0, 1, 0), xpd = NA)
 
@@ -164,13 +134,67 @@ legend(x = -5.5, y = -1.12, ncol = 3, legend = na.omit(rev(labs)[ord]), xpd = NA
 dev.off()
 ```
 
-Total nitrogen load estimates to Tampa Bay for the 1970s and 2010s period by source. 
+Total nitrogen load estimates to Tampa Bay for the 1970s and 2010s period by source: 
+
+```{r}
+column(12, 
+  column(3, 
+    download_file(
+      path = here('figs/3dload_pies.png'),
+      output_name = "TN-summary",
+      output_extension = ".xlsx",
+      button_label = "Download plot",
+      button_type = "warning",
+      has_icon = TRUE,
+      icon = "fa fa-save"
+      )
+  )
+)
+```
+
+<br><br>
 
 ```{r}
 knitr::include_graphics('figs/3dload_pies.png')
 ```
 
-## Total nitrogen (annual, 1985 - 2020) {.tabset .tabset-pills}
+<br>
+
+Nitrogen inputs into Tampa Bay are a key limiting nutrient that can stimulate algal growth and negatively affect seagrass habitat.  The long-term recovery of Tampa Bay is attributed to the successful nitrogen reduction efforts of the Tampa Bay [Nitrogen Management Consortium](https://tbep.org/our-work/boards-committees/nitrogen-management-consortium/).  Each year, nitrogen loads and sources are estimated for Tampa Bay and reported to the Florida Department of Environmental Protection and US Environmental Protection Agency under the [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view).  
+
+This dashboard provides a summary of nitrogen load estimates in various formats (all estimates from Janicki Environmental, Inc.). Load estimates are partitioned into one of five categories by source: 
+
+* __AD__: atmospheric deposition
+* __DPS__: domestic point source
+* __GWS__: groundwater source
+* __IPS__: industrial point source
+* __NPS__: nonpoint source
+
+Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2020 (current reasonable assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2020 for select sources (DPS reuse, DPS end of pipe, IPS, NPS).  The totals tab shows annual results for total nitrogen, hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show target ratios as horizontal lines that are applicable to each bay segment. 
+
+Estimates are also assigned to one of five major bay segments in Tampa Bay: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the five major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
+
+Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view), shown on relevant annual load plots):
+
+* Old Tampa Bay: 486 tons/yr
+* Hillsborough Bay: 1451 tons/yr
+* Middle Tampa Bay: 799 tons/yr
+* Lower Tampa Bay:  349 tons/yr
+* Remainder of Lower Tampa Bay: 629 tons/yr
+
+Hydrologically-normalized load targets as a ratio of total nitrogen to hydrologic load  (nitrogen delivery ratios) for major bay segments are also shown on relevant plots and are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)):
+
+* Old Tampa Bay: 1.08
+* Hillsborough Bay: 1.62
+* Middle Tampa Bay: 1.24
+* Lower Tampa Bay:  0.97
+* Remainder of Lower Tampa Bay: 1.59
+
+```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtest of Janicki Environmental, Inc.'}
+knitr::include_graphics('figs/segmap.PNG')
+```
+
+## Total nitrogen (annual, 1985 - 2020) {.tabset}
 
 ```{r}
 column(12, 
@@ -214,7 +238,7 @@ Data from the __Download plot data__ button includes the following:
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / year
 
-## Total nitrogen, total phosphorus, total suspended solids, and BOD (monthly, 2017 - 2020) {.tabset .tabset-pills}
+## Total nitrogen, total phosphorus, total suspended solids, and BOD (monthly, 2017 - 2020) {.tabset}
 
 ```{r}
 column(12,
@@ -318,7 +342,7 @@ Data from the __Download all entity data__ button includes the following:
 * __*tss_load*__: total suspended solids load in tons / month
 * __*bod_load*__: biological oxygen demand in tons / month
 
-## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset .tabset-pills}
+## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset}
 
 ```{r}
 column(12, 
@@ -401,11 +425,17 @@ plot_ly(toplo, alpha = 1, fill = 'tonexty') %>%
     add_markers(x = ~date, y = ~`Old Tampa Bay`, color = I(cols[5]), stackgroup = 'one', mode = 'none', marker = list(opacity = 0, size = 0), showlegend = T, legendgroup = 'grp5', name = 'Old Tampa Bay') %>% 
   
   layout(
-      xaxis = list(title = NA, gridcolor = '#FFFFFF'),
-      yaxis = list(title = 'TN load (tons / mo)', gridcolor = '#FFFFFF'),
-      barmode = 'stack',
-      legend = list(title = list(text = 'Bay segment'), traceorder = 'reversed')
+    xaxis = list(title = NA, gridcolor = '#FFFFFF'),
+    yaxis = list(title = 'TN load (tons / mo)', gridcolor = '#FFFFFF'),
+    barmode = 'stack',
+    legend = list(title = list(text = 'Bay segment'), traceorder = 'reversed')
+  ) %>% 
+  config(
+    toImageButtonOptions = list(
+      format = "svg",
+      filename = "myplot"
     )
+  )
 
 datatable(toplo, extensions="Scroller", style="bootstrap", class="compact", width="100%",
     options=list(deferRender=TRUE, scrollY=300, scroller=TRUE, 
@@ -454,7 +484,7 @@ Data from the __Download NPS by land use__ button includes the following:
 * __*source*__: total nitrogen source as non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
 
-## Totals {.tabset .tabset-pills}
+## Totals {.tabset}
 
 ```{r}
 column(12, 

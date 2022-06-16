@@ -122,6 +122,12 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
       xaxis = list(title = NA, gridcolor = '#FFFFFF'),
       barmode = 'stack',
       legend = list(title = list(text = 'Source'), traceorder = 'reversed')
+    ) %>% 
+    config(
+      toImageButtonOptions = list(
+        format = "svg",
+        filename = "myplot"
+      )
     )
   
   return(out)
@@ -219,6 +225,12 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
   out <- subplot(p1, p2, p3, p4, p5, p6, shareX = F, nrows = length(levs), shareY = F, titleY = T) %>%
     layout(
       xaxis = list(title = NA, gridcolor = '#FFFFFF')
+    ) %>% 
+    config(
+      toImageButtonOptions = list(
+        format = "svg",
+        filename = "myplot"
+      )
     )
   
   return(out)
