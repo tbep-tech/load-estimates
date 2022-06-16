@@ -78,7 +78,7 @@ historic <- tibble(
 # current estimates, adding historical
 
 srcs <- c('AD', 'DPS', 'IPS', 'NPS', 'GWS')
-labs <- c('Atmospheric Deposition', 'Domestic Point Source', 'Industrial Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
+labs <- c('Atmospheric Deposition', 'Domestic Point Sources', 'Industrial Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
 cols <- c('#33CC33', '#E6B9B8', '#C0504D', '#FFFF99', '#EB641B')
 
 # load in tons, convert to kg
