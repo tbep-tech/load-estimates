@@ -2,6 +2,7 @@
 library(tidyverse)
 library(lubridate)
 library(haven)
+library(readxl)
 library(here)
 
 # segment id, annuals
@@ -186,6 +187,41 @@ mosentdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>
   select(year, month, entity, source, tn_load = tnload)
 
 save(mosentdat, file = here('data/mosentdat.RData'), version = 2)
+
+# all monthly hydro load --------------------------------------------------
+
+dat1 <- read_excel(here('data/raw/TotH2O_2020_Monthly4Seg.xlsx')) %>% 
+  mutate(
+    bay_segment = factor(Segment, levels = c('1', '2', '3', '4'), labels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (106 m3/yr)`)
+dat2 <- read_excel(here('data/raw/RALTB_H2O_Monthly_1720.xlsx')) %>% 
+  mutate(bay_segment = 'RLTB') %>% 
+  select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (106 m3)`)
+dat3 <- read_excel(here('data/raw/H2OMonthlySeg1719.xlsx')) %>% 
+  mutate(
+    bay_segment = factor(Segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (10e6 m3/yr)`)
+
+mohyload <- bind_rows(dat1, dat2, dat3) %>% 
+  mutate(
+    bay_segment = factor(
+      bay_segment, 
+      levels = c('OTB', 'HB', 'MTB', 'LTB', 'RLTB'), 
+      labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay'))
+  ) %>% 
+  arrange(bay_segment, year, month) %>% 
+  mutate(
+    bay_segment = as.character(bay_segment)
+  ) %>% 
+  rename(
+    hy_load_106_m3_mo = hy_load
+  )
+
+save(mohyload, file = here('data/mohyload.RData'))
+
+write.csv(mohyload, '~/Desktop/mohyload.csv', quote = F, row.names = F)
 
 # monthly ips, dps, nps ---------------------------------------------------
 
