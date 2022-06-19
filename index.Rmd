@@ -30,6 +30,7 @@ data(npsmosdat)
 data(npsdpsips)
 data(npsdpsipsent)
 data(npsmosludat)
+data(mohydat)
 
 # get font
 font_add_google("Roboto", "roboto")#, regular = 'C:/Windows/Fonts/Roboto.ttf')
@@ -254,7 +255,7 @@ Data from the __Download plot data__ button includes the following:
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / year
 
-## Total nitrogen, total phosphorus, total suspended solids, and BOD (monthly, 2017 - 2020) {.tabset}
+## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 2017 - 2020) {.tabset}
 
 ```{r}
 column(12,
@@ -357,6 +358,48 @@ Data from the __Download all entity data__ button includes the following:
 * __*tp_load*__: total phosphorus load in tons / month
 * __*tss_load*__: total suspended solids load in tons / month
 * __*bod_load*__: biological oxygen demand in tons / month
+
+## Total hydrologic load (monthly, 2017 - 2020) {.tabset}
+
+```{r}
+column(12,
+  column(3, 
+    mohydat %>%
+      download_this(
+        output_name = "monthly-hydrology",
+        output_extension = ".xlsx",
+        button_label = "Download all plot data",
+        button_type = "warning",
+        has_icon = TRUE,
+        icon = "fa fa-save"
+      )
+    )     
+)
+```
+
+<br></br>
+<br></br>
+
+### Plot
+
+```{r, out.width = '100%', out.height='1000px'}
+hy_plo(mohydat)
+```
+
+### Table
+
+```{r}
+hy_tab(mohydat)
+```
+
+### Metadata
+
+Data from the __Download all plot data__ button includes the following: 
+
+* __*year*__: year of the estimate
+* __*month*__: month of the estimate
+* __*bay_segment*__: the bay segment for the month estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
+* __*hy_load_106_m3_mo*__: hydrologic load as 10$^6$ m$^3$/month
 
 ## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset}
 

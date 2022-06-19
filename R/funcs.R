@@ -134,6 +134,78 @@ tnsrc_plo <- function(datin, xval = c('year', 'date'), src = c('all', 'select'),
   
 }
 
+#' plot hydrologic load by month
+hy_plo <- function(datin){
+
+  levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
+  
+  ttl <- 'Total Hydrologic load (10e6 m3/mo)'
+
+  datin <- datin %>% 
+    mutate(dy = 1) %>% 
+    unite('date', year, month, dy, sep = '-', remove = T) %>% 
+    mutate(
+      date = ymd(date)
+    ) %>% 
+    select(date, bay_segment, hy_load_106_m3_mo)
+    
+  for(lev in seq_along(levs)){
+    
+    toplo <- datin %>% 
+      filter(bay_segment %in% !!levs[lev]) %>% 
+      rename(dt = 'date')
+    
+    p <- plot_ly(toplo, alpha = 1, fill = 'tonexty')  %>% 
+      add_markers(x = ~dt, y = ~hy_load_106_m3_mo, color = I('lightblue'), mode = 'none', marker = list(opacity = 0, size = 0), showlegend = FALSE)
+      
+    p <- p %>% 
+      add_annotations(
+        text = ~unique(bay_segment),
+        x = 0.5,
+        y = 1.2,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "middle",
+        yanchor = "top",
+        showarrow = FALSE,
+        font = list(size = 15)
+      )
+    
+    if(lev == 2)
+      p <- p %>% 
+      layout(
+        yaxis = list(title = ttl)
+      )
+    
+    if(lev != 2)
+      p <- p %>% 
+      layout(
+        yaxis = list(title = NA)
+      )
+    
+    nm <- paste0('p', lev)
+    
+    assign(nm, p)
+    
+  }
+  
+  out <- subplot(p1, p2, p3, p4, p5, p6, shareX = F, nrows = length(levs), shareY = F, titleY = T) %>%
+    layout(
+      xaxis = list(title = NA, gridcolor = '#FFFFFF'),
+      barmode = 'stack',
+      legend = list(title = list(text = 'Source'), traceorder = 'reversed')
+    ) %>% 
+    config(
+      toImageButtonOptions = list(
+        format = "svg",
+        filename = "myplot"
+      )
+    )
+  
+  return(out)
+  
+}
+
 #' plot total load as tn, hyd, or ratio, annual or monthly
 ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F, addtnlns = F){
   
@@ -318,6 +390,53 @@ rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots'), val
 
   }
     
+  return(out)
+  
+}
+
+#' hydrological reactable table summaries
+hy_tab <- function(datin){
+  
+  sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
+                       borderRight = "1px solid #eee", fontWeight = 'bold')
+  
+  datin <- datin %>% 
+    mutate(dy = 1) %>% 
+    unite('date', year, month, dy, sep = '-', remove = T) %>% 
+    mutate(
+      date = ymd(date)
+    )
+    
+  totab <- datin %>% 
+    rename(dt = date) %>% 
+    select(bay_segment, dt, `Total (10e6 m3/mo)` = hy_load_106_m3_mo) %>%
+    mutate(
+      dt = gsub('\\-[0-9]*$', '', dt)
+    )
+
+  out <- reactable(totab,
+                   groupBy = 'bay_segment',
+                   columns = list(
+                     dt = colDef(name = 'Date', 
+                                 format = colFormat(digits = 0, separators = FALSE), 
+                                 style = sticky_style, 
+                                 headerStyle = sticky_style, 
+                                 footerStyle = sticky_style
+                     ), 
+                     bay_segment = colDef(name = ''), 
+                     Total = colDef(
+                       class = "sticky right-col-1", 
+                       headerClass = "sticky right-col-1",
+                       footerClass = "sticky right-col-1"
+                     )
+                   ),
+                   defaultColDef = colDef(
+                     footerStyle = list(fontWeight = "bold"),
+                     format = colFormat(digits = 2, separators = TRUE),
+                     resizable = TRUE
+                   )
+  )
+  
   return(out)
   
 }

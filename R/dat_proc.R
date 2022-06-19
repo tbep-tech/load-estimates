@@ -204,7 +204,7 @@ dat3 <- read_excel(here('data/raw/H2OMonthlySeg1719.xlsx')) %>%
   ) %>% 
   select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (10e6 m3/yr)`)
 
-mohyload <- bind_rows(dat1, dat2, dat3) %>% 
+mohydat <- bind_rows(dat1, dat2, dat3) %>% 
   mutate(
     bay_segment = factor(
       bay_segment, 
@@ -219,9 +219,20 @@ mohyload <- bind_rows(dat1, dat2, dat3) %>%
     hy_load_106_m3_mo = hy_load
   )
 
-save(mohyload, file = here('data/mohyload.RData'))
+allmohydat <- mohydat %>% 
+  group_by(year, month) %>% 
+  summarise(
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)') %>% 
+  select(year, month, bay_segment, hy_load_106_m3_mo)
 
-write.csv(mohyload, '~/Desktop/mohyload.csv', quote = F, row.names = F)
+mohydat <- bind_rows(mohydat, allmohydat)
+
+save(mohydat, file = here('data/mohydat.RData'))
+
+write.csv(mohydat, '~/Desktop/mohydat.csv', quote = F, row.names = F)
 
 # monthly ips, dps, nps ---------------------------------------------------
 
