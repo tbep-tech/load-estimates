@@ -61,7 +61,7 @@ names(cols) <- labs
 yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s')
 
 # from TBEP #04-94
-# totals are kg/yr
+# totals are kg/yr, conveted to tons/yr
 historic <- tibble(
   source = labs,
   yearcat = '1970s',
@@ -70,8 +70,9 @@ historic <- tibble(
 ) %>% 
   mutate(
     yearcat = factor(yearcat, levels = yrlabs),
+    tot = tot / 907.185,
     per = 100 * tot / sum(tot), 
-    kgyr = sum(tot) / nyr / 1e6, 
+    tonyr = sum(tot) / nyr, 
     cols
   )
 
@@ -103,16 +104,15 @@ toplo <- tnanndat %>%
   group_by(yearcat) %>% 
   mutate(
     per = 100 * tot / sum(tot), 
-    kgyr = 907.185 * sum(tot) / nyr, 
-    kgyr = kgyr / 1e6
+    tonyr = sum(tot) / nyr
   ) %>% 
   ungroup %>% 
   bind_rows(historic) %>% 
   mutate(
-    rad = rescale(kgyr, newrange = c(0.5, 1)), 
+    rad = rescale(tonyr, newrange = c(0.5, 1)), 
     lab = gsub('^0$', '< 1', round(per, 0)), 
     lab = paste0(lab, '%'), 
-    ttl = paste0(yearcat, ': ', round(kgyr, 1), ' mill kg/yr')
+    ttl = paste0(yearcat, ': ', formatC(round(tonyr, 0), big.mark = ',', format = 'd'), ' tons/yr')
   )
 
 png(here('figs/3dload_pies.png'), height = 8, width = 8, units = 'in', res = 500, family = fml)
