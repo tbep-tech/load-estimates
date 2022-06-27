@@ -2,32 +2,40 @@ library(tidyverse)
 library(colorspace)
 library(plotrix)
 library(here)
+library(showtext)
+
+# get font
+font_add_google("Roboto", "roboto")#, regular = 'C:/Windows/Fonts/Roboto.ttf')
+fml <- "roboto"
+
+showtext_auto()
+showtext_opts(dpi = 500)
 
 data(tnanndat)
 
 # ggplot ------------------------------------------------------------------
 
-cols <- qualitative_hcl(length(unique(tnanndat$source)), palette = "Dynamic")
-
-toplo <- tnanndat %>% 
-  filter(bay_segment %in% 'All Segments (- N. BCB)') %>% 
-  select(source, year, tn_load) %>% 
-  group_by(year) %>% 
-  mutate(
-    tot = sum(tn_load)
-  )
-
-p <- ggplot(toplo, aes(x = tot/2, y=tn_load, fill=source, width=tot)) +
-  geom_bar(position = "fill", stat="identity", color = 'black') +
-  facet_wrap(~ year) + 
-  coord_polar("y") +
-  scale_fill_manual(values = cols) + 
-  theme_void() +
-  theme(legend.title = element_blank())
-
-png(here('figs/load_pies.png'), height = 8, width = 8, units = 'in', res= 300)
-print(p)
-dev.off()
+# cols <- qualitative_hcl(length(unique(tnanndat$source)), palette = "Dynamic")
+# 
+# toplo <- tnanndat %>% 
+#   filter(bay_segment %in% 'All Segments (- N. BCB)') %>% 
+#   select(source, year, tn_load) %>% 
+#   group_by(year) %>% 
+#   mutate(
+#     tot = sum(tn_load)
+#   )
+# 
+# p <- ggplot(toplo, aes(x = tot/2, y=tn_load, fill=source, width=tot)) +
+#   geom_bar(position = "fill", stat="identity", color = 'black') +
+#   facet_wrap(~ year) + 
+#   coord_polar("y") +
+#   scale_fill_manual(values = cols) + 
+#   theme_void() +
+#   theme(legend.title = element_blank())
+# 
+# png(here('figs/load_pies.png'), height = 8, width = 8, units = 'in', res= 300)
+# print(p)
+# dev.off()
 
 # plotrix 3d --------------------------------------------------------------
 
@@ -123,4 +131,5 @@ for(i in c('1970s', '2010s')){
 }
 
 dev.off()
+
 
