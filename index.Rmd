@@ -15,7 +15,7 @@ library(reactable)
 library(downloadthis)
 library(tools)
 library(shiny)
-library(crosstalk)
+library(crosstalk) # use v1.1.1 to remove (All) from table filter selection
 library(DT)
 library(scales)
 library(plotrix)
