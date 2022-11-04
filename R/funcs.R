@@ -207,14 +207,20 @@ hy_plo <- function(datin){
 }
 
 #' plot total load as tn, hyd, or ratio, annual or monthly
-ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F, addtnlns = F){
+ldtot_plo <- function(datin, yval = c('tn_load', 'tp_load', 'hy_load', 'tnhy', 'tphy')){
   
   levs <- c('All Segments (- N. BCB)', 'Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')
   
-  # ref lines
-  lndf <- data.frame(
+  # ref lines, all from 2009 Reasonal Assurance Addendum (except tphy)
+  # https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view
+  tnhydf <- data.frame(
     bay_segment = levs[-1], 
     ln = c(1.08, 1.62, 1.24, 0.97, 1.59)
+  )
+  
+  tphydf <- data.frame(
+    bay_segment = levs[-1], 
+    ln = c(0.23, 1.28, 0.24, 0.14, 0.52) # from Ray Pribble email 11/4/22
   )
   
   lntndf <- data.frame(
@@ -222,9 +228,14 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
     ln = c(486, 1451, 799, 349, 629)
   )
   
+  hydf <- data.frame(
+    bay_segment = levs[-1], 
+    ln = c(449, 896, 645, 361, 423)
+  )
+  
   ylbs <- tibble(
-    yval = c('tn_load', 'hy_load', 'tnhy'), 
-    ttl = c('Total Nitrogen (tons / yr)', 'Total Hydro Load (mill m3 / yr)', 'TN vs Hydrology ratio')
+    yval = c('tn_load', 'tp_load', 'hy_load', 'tnhy', 'tphy'), 
+    ttl = c('Total Nitrogen (tons / yr)', 'Total Phosphorus (tons/ yr)', 'Total Hydro Load (mill m3 / yr)', 'TN vs Hydrology ratio', 'TP vs Hydrology ratio')
   ) 
     
   yval <- match.arg(yval)
@@ -269,9 +280,19 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
         )
     
     # horizontal ref line
-    if(lev != 1 & addlns){
+    if(lev != 1 & yval == 'tnhy'){
       
-      ln <- lndf[lndf$bay_segment %in% levs[lev], 'ln']
+      ln <- tnhydf[tnhydf$bay_segment %in% levs[lev], 'ln']
+      
+      p <- p %>%  
+        add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+      
+    }
+    
+    # horizontal ref line
+    if(lev != 1 & yval == 'tphy'){
+      
+      ln <- tphydf[tphydf$bay_segment %in% levs[lev], 'ln']
       
       p <- p %>%  
         add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
@@ -279,7 +300,7 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
     }
     
     # horizontal ref tn line
-    if(lev != 1 & addtnlns){
+    if(lev != 1 & yval == 'tn_load'){
       
       ln <- lntndf[lntndf$bay_segment %in% levs[lev], 'ln']
       
@@ -287,6 +308,17 @@ ldtot_plo <- function(datin, yval = c('tn_load', 'hy_load', 'tnhy'), addlns = F,
         add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
       
     }
+    
+    # horizontal ref line
+    if(lev != 1 & yval == 'hy_load'){
+      
+      ln <- hydf[hydf$bay_segment %in% levs[lev], 'ln']
+      
+      p <- p %>%  
+        add_segments(x = min(toplo$dt), xend = max(toplo$dt), y = ln, yend = ln, line = list(color = 'grey', dash = 3), showlegend = F)
+      
+    }
+    
     
     nm <- paste0('p', lev)
     
@@ -378,8 +410,10 @@ rct_tab <- function(datin, dtvar = c('year', 'date'), typ = c('tn', 'tots'), val
                        ), 
                        bay_segment = colDef(name = ''), 
                        tn_load = colDef(name = "TN load (tons / yr)"), 
+                       tp_load = colDef(name = "TP load (tons / yr)"),
                        hy_load = colDef(name = "Hydrologic load (mill m3 / yr)"), 
-                       tnhy = colDef(name = 'TN vs Hydrology ratio')
+                       tnhy = colDef(name = 'TN vs Hydrology ratio'), 
+                       tphy = colDef(name = 'TP vs Hydrology ratio')
                      ),
                      defaultColDef = colDef(
                        footerStyle = list(fontWeight = "bold"),

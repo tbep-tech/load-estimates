@@ -67,48 +67,52 @@ save(tnanndat, file = 'data/tnanndat.RData', version = 2)
 
 # annual totals -----------------------------------------------------------
 
-# tn load, sum source within bay segment
-tntots <- tnanndat %>% 
-  group_by(bay_segment, year) %>% 
-  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
-
-# hy dat only, 2012 to 2020, sum across source
-hytots <- dat %>% 
-  select(source, year, hy_load, bay_segment) %>% 
-  filter(!is.na(hy_load)) %>% 
-  group_by(bay_segment, year) %>% 
-  summarise(hy_load = sum(hy_load, na.rm = T), .groups = 'drop')
-
-# hy dat prior to 2012
-hyoldtots <- hyolddat %>% 
-  rename(BAY_SEG = bay_seg) %>% 
-  left_join(segidann, by = 'BAY_SEG') %>% 
+totanndat <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>% 
+  mutate(
+    bay_segment = case_when(
+      BAY_SEG == 1 ~ 'Old Tampa Bay', 
+      BAY_SEG == 2 ~ 'Hillsborough Bay', 
+      BAY_SEG == 3 ~ 'Middle Tampa Bay', 
+      BAY_SEG == 4 ~ 'Lower Tampa Bay', 
+      BAY_SEG %in% c(6, 7, 55) ~ 'Remainder Lower Tampa Bay'
+    )
+  ) %>% 
   rename(
+    year = YEAR, 
+    tn_load = TN_tons, 
+    tp_load = TP_tons, 
     hy_load = h2oload10e6m3
   ) %>% 
-  select(-BAY_SEG)
+  group_by(year, bay_segment) %>% 
+  summarise(
+    tn_load = sum(tn_load), 
+    tp_load = sum(tp_load), 
+    hy_load = sum(hy_load), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    tnhy = tn_load / hy_load, 
+    tphy = tp_load / hy_load
+  )
 
 # hy dat prior to 2012, sum by segments
-hyoldallseg <- hyoldtots %>% 
+allseg <- totanndat %>% 
   group_by(year) %>% 
   summarise(
+    tn_load = sum(tn_load, na.rm = T),
+    tp_load = sum(tp_load, na.rm = T),
     hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
+  mutate(
+    tnhy = tn_load / hy_load,
+    tphy = tp_load / hy_load
+    ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-hyoldtots <- hyoldtots %>%
-  bind_rows(hyoldallseg)
-
-hytots <- hytots %>% 
-  bind_rows(hyoldtots) %>% 
+totanndat <- totanndat %>% 
+  bind_rows(allseg) %>% 
   arrange(bay_segment, year)
-
-# combine tn, hy 
-totanndat <- tntots %>% 
-  full_join(hytots, by = c('bay_segment', 'year')) %>% 
-  mutate(tnhy =  tn_load / hy_load) %>% 
-  select(year, bay_segment, tn_load, hy_load, tnhy)
 
 save(totanndat, file = 'data/totanndat.RData', version = 2)
 

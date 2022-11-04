@@ -468,7 +468,15 @@ column(12,
 Dotted line is annual bay segment target. 
 
 ```{r, out.width = '100%', out.height='1000px'}
-ldtot_plo(totanndat, yval = 'tn_load', addtnlns = T)
+ldtot_plo(totanndat, yval = 'tn_load')
+```
+
+### Total Phosphorus
+
+Dotted line is annual bay segment target. 
+
+```{r, out.width = '100%', out.height='1000px'}
+ldtot_plo(totanndat, yval = 'tp_load')
 ```
 
 ### Hydrology
@@ -484,7 +492,15 @@ ldtot_plo(totanndat, yval = 'hy_load')
 Dotted line is annual bay segment target. 
 
 ```{r, out.width = '100%', out.height='1000px'}
-ldtot_plo(totanndat, yval = 'tnhy', addlns = T)
+ldtot_plo(totanndat, yval = 'tnhy')
+```
+
+### Total Phosphorus vs Hydrology
+
+Dotted line is annual bay segment target. 
+
+```{r, out.width = '100%', out.height='1000px'}
+ldtot_plo(totanndat, yval = 'tphy')
 ```
 
 ### Table 
@@ -500,7 +516,9 @@ Data from the __Download plot data__ button includes the following:
 * __*year*__: year of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*tn_load*__: total nitrogen load in tons / year
+* __*tp_load*__: total phosphorus load in tons / year
 * __*hy_load*__: hydrologic load in million cubic meters / year
 * __*tnhy*__: ratio between total nitrogen and hydrologic loads
+* __*tphy*__: ratio between total phosphorus and hydrologic loads
 
 <script type="text/javascript" src="js/iframeResizer.contentWindow.min.js"></script>
