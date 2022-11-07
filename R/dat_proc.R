@@ -24,7 +24,8 @@ clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>%
   select(CLUCSID, DESCRIPTION) %>% 
   unique
 
-# annual tn estimates -----------------------------------------------------
+
+# tn load by source for major bay segments ----------------------------------------------------
 
 # 85 - 20
 # original data from here T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-8/LoadingCodes&Datasets2020/TotalLoads2020'
@@ -34,13 +35,10 @@ ips8520 <- read_sas(here('data/raw/ips_ml_8520.sas7bdat'))
 nps8520 <- read_sas(here('data/raw/nps_8520.sas7bdat'))
 gws8520 <- read_sas(here('data/raw/gws_8520.sas7bdat'))
 
-# h2o load data prior to 2012, no source info
-hyolddat <- read_sas(here('data/raw/h2oannseg8511.sas7bdat'))
-
-# TN is in tons / yr, h2o is in million m3 / yr
+# TN is in tons / yr
 dat <- bind_rows(ad8520, dps8520, ips8520, nps8520, gws8520) %>% 
-  rename(
-    hy_load = h2oload10e6m3, 
+  select(
+    BAY_SEG,
     tn_load = TN_tons, 
     year = YEAR,
     source = SOURCE
@@ -52,16 +50,48 @@ tots <- dat %>%
   group_by(year, source) %>% 
   summarise(
     tn_load = sum(tn_load),
-    hy_load = sum(hy_load),
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
 dat <- bind_rows(tots, dat)
 
-# tn data only
+# tn data only, up to 2016
 tnanndat <- dat %>% 
-  select(year, bay_segment, source, tn_load)
+  select(year, bay_segment, source, tn_load) %>% 
+  filter(year <= 2016)
+
+# current load data by sourc ra period 2017 to 2021 (from RP email 11/4/22)
+loadra1721 <- read.csv(here('data/raw/TotalLoadbySource2017-2021.csv')) %>% 
+  na.omit() %>% 
+  pivot_longer(-c(segment, type), names_to = 'year') %>% 
+  filter(!type %in% c('DPS RE', 'DPS SW', 'ML')) %>% 
+  mutate(
+    year = as.numeric(gsub('^X', '', year)),
+    source = as.character(factor(type, 
+                    levels = c('AD', 'DPS (RE+SW)', 'GW', 'IPS', 'NPS', 'SPR'),
+                    labels = c('AD', 'DPS', 'GWS', 'IPS', 'NPS', 'GWS')
+    )),
+    bay_segment = as.character(factor(segment, 
+                         levels = c('OTB', 'HB', 'MTB', 'LTB', 'MR', 'TCB', 'BCB-S'), 
+                         labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
+  ) %>% 
+  group_by(year, bay_segment, source) %>% 
+  summarise(
+    tn_load = sum(value), 
+    .groups = 'drop'
+  )
+  
+loadra1721tots <- loadra1721 %>% 
+  group_by(year, source) %>% 
+  summarise(
+    tn_load = sum(tn_load),
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)')
+
+tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots) %>% 
+  arrange(year, bay_segment, source)
 
 save(tnanndat, file = 'data/tnanndat.RData', version = 2)
 

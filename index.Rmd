@@ -110,7 +110,7 @@ Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrolog
 knitr::include_graphics('figs/segmap.PNG')
 ```
 
-## Total nitrogen (annual, 1985 - 2020) {.tabset}
+## Total nitrogen (annual, 1985 - 2021) {.tabset}
 
 ```{r}
 column(12, 
