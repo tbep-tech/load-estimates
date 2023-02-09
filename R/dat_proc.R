@@ -62,23 +62,28 @@ tnanndat <- dat %>%
   filter(year <= 2016)
 
 # current load data by sourc ra period 2017 to 2021 (from RP email 11/4/22)
-loadra1721 <- read.csv(here('data/raw/TotalLoadbySource2017-2021.csv')) %>% 
+loadra1721 <- read.csv(here('data/raw/totn1721_segsource.csv')) %>% 
+  select(
+    bay_segment = BAY_SEG, 
+    year = Year, 
+    source, 
+    tn_load = tnload
+    ) %>% 
   na.omit() %>% 
-  pivot_longer(-c(segment, type), names_to = 'year') %>% 
-  filter(!type %in% c('DPS RE', 'DPS SW', 'ML')) %>% 
+  filter(bay_segment %in% c(1, 2, 3, 4, 5567)) %>%
+  filter(!source %in% c('POR')) %>% # fertilizer handling losses, sometimes as ML, see RP email 2/9/23
   mutate(
-    year = as.numeric(gsub('^X', '', year)),
-    source = as.character(factor(type, 
-                    levels = c('AD', 'DPS (RE+SW)', 'GW', 'IPS', 'NPS', 'SPR'),
+    source = as.character(factor(source, 
+                    levels = c('AD', 'DPS', 'GW', 'IPS', 'NPS', 'SPR'),
                     labels = c('AD', 'DPS', 'GWS', 'IPS', 'NPS', 'GWS')
     )),
-    bay_segment = as.character(factor(segment, 
-                         levels = c('OTB', 'HB', 'MTB', 'LTB', 'MR', 'TCB', 'BCB-S'), 
-                         labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
+    bay_segment = as.character(factor(bay_segment, 
+                         levels = as.character(c(1, 2, 3, 4, 5567)), 
+                         labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
   ) %>% 
   group_by(year, bay_segment, source) %>% 
   summarise(
-    tn_load = sum(value), 
+    tn_load = sum(tn_load), 
     .groups = 'drop'
   )
   
@@ -90,7 +95,8 @@ loadra1721tots <- loadra1721 %>%
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots) %>% 
+tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots) %>%
+  tidyr::complete(bay_segment, source, year, fill = list(tn_load = 0)) %>% 
   arrange(year, bay_segment, source)
 
 save(tnanndat, file = 'data/tnanndat.RData', version = 2)
