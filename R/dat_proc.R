@@ -27,7 +27,7 @@ clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>%
 
 # tn load by source for major bay segments ----------------------------------------------------
 
-# 85 - 20
+# 85 - 20data
 # original data from here T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-8/LoadingCodes&Datasets2020/TotalLoads2020'
 ad8520 <- read_sas(here('data/raw/ad_8520.sas7bdat'))
 dps8520 <- read_sas(here('data/raw/dps_8520.sas7bdat'))
@@ -103,7 +103,7 @@ save(tnanndat, file = 'data/tnanndat.RData', version = 2)
 
 # annual totals -----------------------------------------------------------
 
-totanndat <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>% 
+totanndatpre <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>% 
   mutate(
     bay_segment = case_when(
       BAY_SEG == 1 ~ 'Old Tampa Bay', 
@@ -129,7 +129,38 @@ totanndat <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>%
   mutate(
     tnhy = tn_load / hy_load, 
     tphy = tp_load / hy_load
+  ) %>% 
+  filter(year < 2017)
+
+# 2017 - 2022 RA period (from updated file)
+totanndatpos <- read.csv(here('data/raw/totn1721_segsource.csv')) %>% 
+  select(
+    bay_segment = BAY_SEG, 
+    year = Year, 
+    source, 
+    tn_load = tnload, 
+    tp_load = tpload, 
+    hy_load = h2oload10e6m3
+  ) %>% 
+  filter(bay_segment %in% c(1, 2, 3, 4, 6, 7, 55)) %>%
+  mutate(
+    bay_segment = as.character(factor(bay_segment, 
+                                      levels = as.character(c(1, 2, 3, 4, 6, 7, 55)), 
+                                      labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
+  ) %>% 
+  group_by(year, bay_segment) %>% 
+  summarise(
+    tn_load = sum(tn_load), 
+    tp_load = sum(tp_load), 
+    hy_load = sum(hy_load),
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    tnhy = tn_load / hy_load,      
+    tphy = tp_load / hy_load
   )
+
+totanndat <- bind_rows(totanndatpre, totanndatpos)
 
 # hy dat prior to 2012, sum by segments
 allseg <- totanndat %>% 
@@ -143,7 +174,7 @@ allseg <- totanndat %>%
   mutate(
     tnhy = tn_load / hy_load,
     tphy = tp_load / hy_load
-    ) %>% 
+  ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
 totanndat <- totanndat %>% 
