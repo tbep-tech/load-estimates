@@ -122,9 +122,9 @@ totanndatpre <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>%
   ) %>% 
   group_by(year, bay_segment) %>% 
   summarise(
-    tn_load = sum(tn_load), 
-    tp_load = sum(tp_load), 
-    hy_load = sum(hy_load), 
+    tn_load = sum(tn_load, na.rm = T), 
+    tp_load = sum(tp_load, na.rm = T), 
+    hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
   mutate(
@@ -152,9 +152,9 @@ totanndatpos <- read.csv(here('data/raw/totn1721_segsource.csv')) %>%
   ) %>% 
   group_by(year, bay_segment) %>% 
   summarise(
-    tn_load = sum(tn_load), 
-    tp_load = sum(tp_load), 
-    hy_load = sum(hy_load),
+    tn_load = sum(tn_load, na.rm = T), 
+    tp_load = sum(tp_load, na.rm = T), 
+    hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
   mutate(
