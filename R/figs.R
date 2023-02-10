@@ -132,4 +132,75 @@ for(i in c('1970s', '2010s')){
 
 dev.off()
 
+# hydro load scaled -------------------------------------------------------
 
+load(file = here('data/totanndat.RData'))
+
+levs <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
+
+hydf <- data.frame(
+  bay_segment = levs, 
+  ln = c(449, 896, 645, 361)
+)
+
+ttl <- 'Total Hydro Load (mill m3 / yr)'
+
+toplo <- totanndat %>% 
+  select(bay_segment, year, hy_load) %>% 
+  filter(bay_segment %in% levs) %>% 
+  left_join(hydf, by = 'bay_segment') %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = levs)#, 
+    # colv = ifelse(hy_load >= ln, 'above', 'below'), 
+    # perdiff = (hy_load - ln )/ ln
+  )
+
+toplo <- seq(min(toplo$year), max(toplo$year), by = 0.1) %>% 
+  crossing(
+    year = .,
+    bay_segment = levs) %>% 
+  left_join(., totanndat, by = c('year', 'bay_segment'), multiple = 'all')  %>% 
+  select(bay_segment, year, hy_load) %>% 
+  left_join(., hydf, by = 'bay_segment') %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = levs)
+  ) %>% 
+  arrange(bay_segment, year) %>% 
+  mutate(
+    hy_load = zoo::na.approx(hy_load, na.rm = FALSE), 
+    .by = 'bay_segment'
+  ) %>% 
+  mutate(
+    colv = ifelse(hy_load >= ln, 'above', 'below'),
+    perdiff = (hy_load - ln )/ ln
+  )
+
+p <- ggplot(toplo, aes(x = year, group = bay_segment, col = colv, fill = colv)) + 
+  geom_area(aes(y = ifelse(perdiff < 0, perdiff, 0), fill = 'Below target', col = 'Below target'), alpha = 0.7) +
+  geom_area(aes(y = ifelse(perdiff > 0, perdiff, 0), fill = 'Above target', col = 'Above target'), alpha = 0.7) +
+  geom_hline(aes(yintercept = 0)) +
+  scale_color_manual(values = c('#CC3231', '#2DC938')) + 
+  scale_fill_manual(values = c('#CC3231', '#2DC938')) + 
+  facet_wrap(~bay_segment, ncol = 1) + 
+  scale_x_continuous(breaks = seq(min(toplo$year), max(toplo$year), by = 5), expand = c(0, 0)) + 
+  scale_y_continuous(labels = scales::percent_format(), limits = c(-1, 1)) +
+  theme_minimal() + 
+  theme(
+    strip.background = element_blank(), 
+    strip.text = element_text(size = 12), 
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    legend.position = 'none', 
+    axis.title.y = element_text(size = 12), 
+    axis.text.x = element_text(size = 12)
+  ) +
+  labs(
+    y = '% above/below', 
+    x = NULL, 
+    title = 'Annual hydrologic load above or below bay segment target'
+  )
+
+png(here('figs/hydroscaled.png'), height = 10, width = 10, units = 'in', res = 300, family = fml)
+print(p)
+dev.off()
