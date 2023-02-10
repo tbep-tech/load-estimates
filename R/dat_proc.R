@@ -62,6 +62,7 @@ tnanndat <- dat %>%
   filter(year <= 2016)
 
 # current load data by sourc ra period 2017 to 2021 (from RP email 11/4/22)
+# source is here T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\Loads1721_DocTables\Loads1721_DocTables
 loadra1721 <- read.csv(here('data/raw/totn1721_segsource.csv')) %>% 
   select(
     bay_segment = BAY_SEG, 
@@ -133,6 +134,7 @@ totanndatpre <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>%
   filter(year < 2017)
 
 # 2017 - 2022 RA period (from updated file)
+# source is here T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\Loads1721_DocTables\Loads1721_DocTables
 totanndatpos <- read.csv(here('data/raw/totn1721_segsource.csv')) %>% 
   select(
     bay_segment = BAY_SEG, 
