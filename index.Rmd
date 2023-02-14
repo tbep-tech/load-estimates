@@ -82,7 +82,7 @@ This dashboard provides a summary of nitrogen load estimates in various formats 
 * __IPS__: industrial point source
 * __NPS__: nonpoint source
 
-Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2020 (current Reasonable Assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2020 for select sources (DPS reuse, DPS end of pipe, IPS, NPS).  The totals tab shows annual results for total nitrogen (TN), hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show adopted numeric nutrient criteria for TN as horizontal lines that are applicable to each bay segment. 
+Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2021 (previous Reasonable Assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2021 for select sources (DPS reuse, DPS end of pipe, IPS, NPS).  The totals tab shows annual results for total nitrogen (TN), hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show adopted numeric nutrient criteria for TN as horizontal lines that are applicable to each bay segment. 
 
 Estimates are also assigned to individual bay segments recognized in the Tampa Bay [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view): Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and southern Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the four major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
@@ -300,7 +300,7 @@ Data from the __Download all plot data__ button includes the following:
 * __*bay_segment*__: the bay segment for the month estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*hy_load_106_m3_mo*__: hydrologic load as 10$^6$ m$^3$/month
 
-## Total nitrogen select sources (monthly, 2004 - 2020) {.tabset}
+## Total nitrogen select sources (monthly, 2004 - 2021) {.tabset}
 
 ```{r}
 column(12, 

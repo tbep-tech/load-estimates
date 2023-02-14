@@ -403,8 +403,56 @@ save(npsdpsips, file = here('data/npsdpsips.RData'), version = 2)
 
 # nps, ips, dps by entity -------------------------------------------------
 
-# non-point source
+# non-point source prior to 2017-2021 RA
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
+  group_by(entity, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
+  filter(year < 2017)
+
+# industrial point source prior to 2017-2021 RA
+ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
+  rename(
+    year = Year, 
+    month = Month
+  ) %>% 
+  group_by(entity, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'PS'
+  ) %>% 
+  filter(year < 2017)
+
+# domestic point source prior to 2017-2021 RA 
+dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+  rename(
+    year = Year, 
+    month = Month
+  ) %>% 
+  mutate(
+    source = case_when(
+      grepl('REUSE$', source2) ~ 'DPS - reuse', 
+      grepl('SW$', source2) ~ 'DPS - end of pipe'
+    )
+  ) %>% 
+  group_by(entity, source, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  filter(year < 2017)
+
+# non-point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>% 
   group_by(entity, year, month) %>% 
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
@@ -414,8 +462,9 @@ npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
     source = 'NPS'
   )
 
-# industrial point source
-ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
+# industrial point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+ipsmosdat2 <- read_sas(here('data/raw/ips1721monthentbas.sas7bdat')) %>% 
   rename(
     year = Year, 
     month = Month
@@ -429,8 +478,9 @@ ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>%
     source = 'PS'
   )
 
-# domestic point source  
-dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+# domestic point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>% 
   rename(
     year = Year, 
     month = Month
@@ -447,6 +497,10 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
     .groups = 'drop'
   )
 
+npsmosdat <- bind_rows(npsmosdat, npsmosdat2)
+ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2)
+dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
+
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, entity, source, tn_load)
   
@@ -454,7 +508,7 @@ save(npsdpsipsent, file = here('data/npsdpsipsent.RData'), version = 2)
 
 # nps tn by land use ------------------------------------------------------
 
-# non-point source
+# non-point source prior to 2017 - 2022 RA
 npsmosludat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   left_join(clucs_lkup, by = 'CLUCSID') %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
@@ -466,6 +520,24 @@ npsmosludat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   mutate(
     source = 'NPS'
   ) %>% 
+  select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load) %>% 
+  filter(year < 2017)
+
+# non-point source 2017 - 2022 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+npsmosludat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>% 
+  left_join(clucs_lkup, by = 'CLUCSID') %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
+  group_by(DESCRIPTION, bay_segment, year, month) %>% 
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
   select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
+
+npsmosludat <- bind_rows(npsmosludat, npsmosludat2)
 
 save(npsmosludat, file = here('data/npsmosludat.RData'), version = 2)
