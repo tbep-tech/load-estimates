@@ -309,24 +309,24 @@ write.csv(mohydat, '~/Desktop/mohydat.csv', quote = F, row.names = F)
 
 # monthly ips, dps, nps ---------------------------------------------------
 
-# non-point source
+# non-point source prior to 2017-2021 RA
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
   left_join(clucs_lkup, by = 'CLUCSID') %>% 
   mutate(
     source = 'NPS'
   ) %>% 
-  select(year, month, bay_segment, basin, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
+  select(year, month, bay_segment, entity, lu = DESCRIPTION, source, tn_load = tnloadtons) %>% filter(year < 2017)
 
-# industrial point source
+# industrial point source prior to 2017-2021 RA
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
   mutate(
     source = 'IPS'
   ) %>% 
-  select(year = Year, month = Month, bay_segment, basin = BASIN, facility = facname, source, tn_load = tnloadtons)
+  select(year = Year, month = Month, bay_segment, facility = facname, source, tn_load = tnloadtons) %>% filter(year < 2017)
 
-# domestic point source  
+# domestic point source prior to 2017-2021 RA 
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>%
   mutate(
@@ -335,7 +335,42 @@ dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>%
       grepl('SW$', source2) ~ 'DPS - end of pipe'
     )
   ) %>% 
-  select(year = Year, month = Month, bay_segment, basin, entity, facility = facname, source, tn_load = tnloadtons)
+  select(year = Year, month = Month, bay_segment, entity, facility = facname, source, tn_load = tnloadtons) %>% filter(year < 2017)
+
+# non-point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
+  left_join(clucs_lkup, by = 'CLUCSID') %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
+  select(year, month, bay_segment, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
+
+# industrial point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+ipsmosdat2 <- read_sas(here('data/raw/ips1721monthentbas.sas7bdat')) %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
+  mutate(
+    source = 'IPS'
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, facility = facname, source, tn_load = tnloadtons)
+
+# domestic point source 2017-2021 RA
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
+dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>% 
+  inner_join(segidmos, by = 'bayseg') %>%
+  mutate(
+    source = case_when(
+      grepl('REUSE$', source2) ~ 'DPS - reuse', 
+      grepl('SW$', source2) ~ 'DPS - end of pipe'
+    )
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, entity, facility = facname, source, tn_load = tnloadtons) 
+
+npsmosdat <- bind_rows(npsmosdat, npsmosdat2)
+ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2)
+dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
 
 save(npsmosdat, file = here('data/npsmosdat.RData'), version = 2)
 save(ipsmosdat, file = here('data/ipsmosdat.RData'), version = 2)
