@@ -187,8 +187,8 @@ save(totanndat, file = 'data/totanndat.RData', version = 2)
 
 # all monthly tn, tp, tss, bod estimates ----------------------------------
 
-# source here: T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-8\2017-2020Annual&MonthlyLoadDatasets
-mosdat <- read_sas(here('data/raw/monthly1720entityloaddataset.sas7bdat')) %>% 
+# original at T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-9/datastick_deliverables/2017-2021Annual&MonthlyLoadDatasets/MakeMonthAnnDatasets/Monthly/monthly1721entityloaddataset.sas7bdat
+mosdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>% 
   select(bayseg, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
   mutate(
     source = case_when(

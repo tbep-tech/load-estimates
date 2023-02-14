@@ -154,7 +154,7 @@ Data from the __Download plot data__ button includes the following:
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / year
 
-## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 2017 - 2020) {.tabset}
+## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 2017 - 2021) {.tabset}
 
 ```{r}
 column(12,
