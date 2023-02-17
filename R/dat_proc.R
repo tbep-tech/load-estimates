@@ -276,8 +276,14 @@ dat3 <- read_excel(here('data/raw/H2OMonthlySeg1719.xlsx')) %>%
     bay_segment = factor(Segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
   select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (10e6 m3/yr)`)
+dat4 <- read_excel(here('data/raw/TotH2O_2021_Monthly4Seg.xlsx')) %>% 
+  mutate(
+    bay_segment = factor(Segment, levels = c('1', '2', '3', '4'), labels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (106 m3/yr)`)
 
-mohydat <- bind_rows(dat1, dat2, dat3) %>% 
+
+mohydat <- bind_rows(dat1, dat2, dat3, dat4) %>% 
   mutate(
     bay_segment = factor(
       bay_segment, 
@@ -293,6 +299,7 @@ mohydat <- bind_rows(dat1, dat2, dat3) %>%
   )
 
 allmohydat <- mohydat %>% 
+  filter(year < 2021) %>% # remove this when I have 2021 raltb
   group_by(year, month) %>% 
   summarise(
     hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
@@ -305,7 +312,7 @@ mohydat <- bind_rows(mohydat, allmohydat)
 
 save(mohydat, file = here('data/mohydat.RData'))
 
-write.csv(mohydat, '~/Desktop/mohydat.csv', quote = F, row.names = F)
+# write.csv(mohydat, '~/Desktop/mohydat.csv', quote = F, row.names = F)
 
 # monthly ips, dps, nps ---------------------------------------------------
 
