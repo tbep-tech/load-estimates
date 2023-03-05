@@ -68,6 +68,30 @@ png(here('figs/tnridges.png'), height = 5, width = 9, units = 'in', res = 300)
 print(p1)
 dev.off()
 
+p2 <- ggplot(toplo1, aes(y = reorder(facility, tn_load), height = tn_load, x = year, fill = tnave)) +
+  geom_ridgeline(scale = 0.1, show.legend = F, alpha = 1) + 
+  scale_x_continuous(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) + 
+  scale_fill_distiller(palette = 'Greens', direction = 1) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    y = "Relative loads by facility", 
+    x = NULL, 
+    # subtitle = "By facility", 
+    caption = 'Data from Janicki Environmental, Inc. and Tampa Bay Estuary Program',
+    title = 'Total Nitrogen to Old Tampa Bay', 
+    subtitle = 'Includes end of pipe, reuse, and industrial sources'
+  )
+
+png(here('figs/tnridges2.png'), height = 5, width = 6, units = 'in', res = 300)
+print(p2)
+dev.off()
+
 toplo2 <- toplo1 %>% 
   summarise(
     tnave = mean(tn_load),
@@ -79,7 +103,7 @@ toplo2 <- toplo1 %>%
     tnavetxt = round(tnave, 1)
   )
 
-p2 <- ggplot(toplo2, aes(y = reorder(facility, tnave), x = tnave)) + 
+p3 <- ggplot(toplo2, aes(y = reorder(facility, tnave), x = tnave)) + 
   with_shadow(geom_col(color = 'black', aes(fill = tnave), show.legend = F, alpha = 1, width = 0.6), x_offset = 0, y_offset = 0, sigma = 3) + 
   # geom_errorbar(aes(xmin = tnlo, xmax = tnhi), width = 0) + 
   geom_text(aes(x = tnave, label = tnavetxt), nudge_x = 0.9) + 
@@ -93,13 +117,13 @@ p2 <- ggplot(toplo2, aes(y = reorder(facility, tnave), x = tnave)) +
     axis.text.x = element_text(size = rel(1.3))
   ) + 
   labs(
-    x = 'Mean TN load (tons / yr)',
+    x = 'Mean TN load (tons / yr), 2004 - 2021',
     y = NULL, 
-    title = paste0('Total Nitrogen to Old Tampa Bay: ', sum(toplo2$tnavetxt), ' tons / yr'),
+    title = paste0('Average Total Nitrogen to Old Tampa Bay: ', sum(toplo2$tnavetxt), ' tons / yr'),
     subtitle = 'Includes end of pipe, reuse, and industrial sources' ,
     caption = 'Data from Janicki Environmental, Inc. and Tampa Bay Estuary Program'
   )
 
 png(here('figs/tnloadbar.png'), height = 4, width = 7, units = 'in', res = 300)
-print(p2)
+print(p3)
 dev.off()
