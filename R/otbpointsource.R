@@ -8,6 +8,8 @@ library(here)
 data(dpsmosdat)
 data(ipsmosdat)
 
+# list of major PS facilities https://drive.google.com/file/d/1IU2-h0HXaTuQa6ITOLZJ04qrZ7iLQa60/view?usp=sharing
+
 toplo1 <- bind_rows(ipsmosdat, dpsmosdat) %>% 
   summarise(
     tn_load = sum(tn_load), 
