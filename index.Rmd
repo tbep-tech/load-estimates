@@ -258,7 +258,7 @@ Data from the __Download all entity data__ button includes the following:
 * __*tss_load*__: total suspended solids load in tons / month
 * __*bod_load*__: biological oxygen demand in tons / month
 
-## Total hydrologic load (monthly, 2017 - 2020) {.tabset}
+## Total hydrologic load (monthly, 2017 - 2021) {.tabset}
 
 ```{r}
 column(12,

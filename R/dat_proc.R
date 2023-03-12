@@ -282,8 +282,14 @@ dat4 <- read_excel(here('data/raw/TotH2O_2021_Monthly4Seg.xlsx')) %>%
   ) %>% 
   select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (106 m3/yr)`)
 
+# rltb 2021, sent via email from RP 3/10/23
+dat5 <- read_excel(here('data/raw/RLTB21MnthH2O.xlsx')) %>% 
+  mutate(
+    bay_segment = factor(`BaySeg (RLTB)`, levels = '5567', labels = 'RLTB')
+  ) %>% 
+  select(year = Year, month = Month, bay_segment, hy_load = `H2O Load (million m3/month)`)
 
-mohydat <- bind_rows(dat1, dat2, dat3, dat4) %>% 
+mohydat <- bind_rows(dat1, dat2, dat3, dat4, dat5) %>% 
   mutate(
     bay_segment = factor(
       bay_segment, 
@@ -299,7 +305,6 @@ mohydat <- bind_rows(dat1, dat2, dat3, dat4) %>%
   )
 
 allmohydat <- mohydat %>% 
-  filter(year < 2021) %>% # remove this when I have 2021 raltb
   group_by(year, month) %>% 
   summarise(
     hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
