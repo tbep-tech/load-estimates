@@ -351,7 +351,8 @@ alloldmohydat <- oldmohydat %>%
     bay_segment = 'All Segments (- N. BCB)'
   )
 
-mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat)
+mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat) %>% 
+  arrange(bay_segment, year, month)
 
 save(mohydat, file = here('data/mohydat.RData'))
 
