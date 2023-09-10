@@ -313,7 +313,45 @@ allmohydat <- mohydat %>%
   mutate(bay_segment = 'All Segments (- N. BCB)') %>% 
   select(year, month, bay_segment, hy_load_106_m3_mo)
 
-mohydat <- bind_rows(mohydat, allmohydat)
+# 1985 to 2016
+oldmohydat <- read_excel(here('data/raw/Tampa Bay Loadings 1985-2016.xlsx'), sheet = 'Monthly H2O Loads') %>% 
+  mutate(
+    bay_segment = case_when(
+      Month == 1 ~ 'Old Tampa Bay', 
+      Month == 2 ~ 'Hillsborough Bay', 
+      Month == 3 ~ 'Middle Tampa Bay', 
+      Month == 4 ~ 'Lower Tampa Bay', 
+      Month == 5 ~ 'Boca Ciega Bay', 
+      Month == 6 ~ 'Terra Ceia Bay', 
+      Month == 7 ~ 'Manatee River'
+    )
+  ) %>% 
+  select(
+    year = YEAR, 
+    month = MONTH, 
+    bay_segment, 
+    hy_load_106_m3_mo = `H2O Load (million m3/month)`
+  ) %>% 
+  mutate(
+    bay_segment = case_when(
+      bay_segment %in% c('Boca Ciega Bay', 'Terra Ceia Bay', 'Manatee River') ~ 'Remainder Lower Tampa Bay', 
+      T ~ bay_segment
+    )
+  ) %>% 
+  summarise(
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    .by = c(year, month, bay_segment)
+  )
+alloldmohydat <- oldmohydat %>% 
+  summarise(
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    .by = c(year, month)
+  ) %>% 
+  mutate(
+    bay_segment = 'All Segments (- N. BCB)'
+  )
+
+mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat)
 
 save(mohydat, file = here('data/mohydat.RData'))
 
