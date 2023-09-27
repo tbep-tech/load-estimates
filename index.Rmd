@@ -1,7 +1,8 @@
 ---
 output: 
-  html_document
-css: styles.css
+  html_document:
+    self_contained: false
+    css: styles.css
 ---
 
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
