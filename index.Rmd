@@ -107,9 +107,7 @@ Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrolog
 + Manatee River Estuary: 1.80 tons/million cubic meters  of water
 * Boca Ciega Bay North: 1.54 tons/million cubic meters  of water
 
-```{r, out.width = '40%', fig.align = 'center', fig.cap='Major bay segments in Tampa Bay used to assign load estimates.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtesy of Janicki Environmental, Inc.'}
-knitr::include_graphics('figs/segmap.PNG')
-```
+<img src="figs/segmap.png" alt="Major bay segments in Tampa Bay used to assign load estimates. The Remainder of Lower Tampa Bay includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtesy of Janicki Environmental, Inc." width="40%" />
 
 ## Total nitrogen (annual, 1985 - 2021) {.tabset}
 
