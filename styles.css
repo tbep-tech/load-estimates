@@ -266,6 +266,7 @@ a:hover {
     letter-spacing: 2px;
     font-weight: 500;
     margin-top: 3px;
+    margin-left: 3px;
 }
 .nav-pills>li>a:hover, .nav-pills>li>a:focus, .nav-pills>li.active>a,     .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus{
      background-color: #ea6f17;
