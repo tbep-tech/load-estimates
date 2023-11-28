@@ -73,7 +73,7 @@ knitr::include_graphics('figs/3dload_pies.png')
 
 <br>
 
-Nitrogen inputs into Tampa Bay are a key limiting nutrient that can stimulate algal growth and negatively affect seagrass habitat.  The long-term recovery of Tampa Bay is attributed to the successful nitrogen reduction efforts of the Tampa Bay [Nitrogen Management Consortium](https://tbep.org/our-work/boards-committees/nitrogen-management-consortium/).  Nitrogen loads and sources are routinely estimated for Tampa Bay and reported to the Florida Department of Environmental Protection and US Environmental Protection Agency under a 5-year [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view).  
+Nitrogen inputs into Tampa Bay are a key limiting nutrient that can stimulate algal growth and negatively affect seagrass habitat.  The long-term recovery of Tampa Bay is attributed to the successful nitrogen reduction efforts of the Tampa Bay [Nitrogen Management Consortium](https://tbep.org/our-work/boards-committees/nitrogen-management-consortium/){target="_parent"}.  Nitrogen loads and sources are routinely estimated for Tampa Bay and reported to the Florida Department of Environmental Protection and US Environmental Protection Agency under a 5-year [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view){target="_parent"}.  
 
 This dashboard provides a summary of nitrogen load estimates in various formats (all estimates from Janicki Environmental, Inc.). Load estimates are partitioned into one of five categories by source: 
 
@@ -85,9 +85,9 @@ This dashboard provides a summary of nitrogen load estimates in various formats 
 
 Source estimates for total nitrogen are shown annually from 1985 to present, by month from 2017 to 2021 (previous Reasonable Assurance period, also including total phosphorus, total suspended solids, and BOD), and by month from 2004 to 2021 for select sources (DPS reuse, DPS end of pipe, IPS, NPS).  The totals tab shows annual results for total nitrogen (TN), hydrologic load, and total nitrogen vs hydrologic load ratios. The load ratio plots show adopted numeric nutrient criteria for TN as horizontal lines that are applicable to each bay segment. 
 
-Estimates are also assigned to individual bay segments recognized in the Tampa Bay [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view): Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and southern Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the four major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
+Estimates are also assigned to individual bay segments recognized in the Tampa Bay [Reasonable Assurance Plan](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view){target="_parent"}: Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, and the Remainder of Lower Tampa Bay.  The "Remainder of Lower Tampa Bay" includes the Manatee River, Terra Ceia Bay, and southern Boca Ciega Bay.  Estimates for all segments are also provided as the sum of loads across the four major bay segments and the remainder of Lower Tampa Bay.  Note that this does not include the northern portion of Boca Ciega Bay (i.e., __(- N. BCB)__ in the tables and plots).  
 
-Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view), shown on relevant annual load plots):
+Annual load targets for total nitrogen (tons/yr) by major bay segments are as follows ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view){target="_parent"}, shown on relevant annual load plots):
 
 * Old Tampa Bay: 486 tons/yr
 * Hillsborough Bay: 1451 tons/yr
@@ -95,7 +95,7 @@ Annual load targets for total nitrogen (tons/yr) by major bay segments are as fo
 * Lower Tampa Bay:  349 tons/yr
 * Remainder of Lower Tampa Bay: 629 tons/yr
 
-Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrologic load (nitrogen delivery ratios) for each bay segment, are also shown on relevant plots ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view)). These nitrogen delivery ratios have been adopted as the annual RA compliance assessment thresholds and/or [estuarine numeric nutrient criteria](https://www.flrules.org/gateway/RuleNo.asp?title=SURFACE%20WATER%20QUALITY%20STANDARDS&ID=62-302.532) for Tampa Bay and are as follows :
+Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrologic load (nitrogen delivery ratios) for each bay segment, are also shown on relevant plots ([2009 RA Addendum](https://drive.google.com/file/d/10IjJAfcGFf007a5VdPXAUtUi4dx-cmsA/view){target="_parent"}). These nitrogen delivery ratios have been adopted as the annual RA compliance assessment thresholds and/or [estuarine numeric nutrient criteria](https://www.flrules.org/gateway/RuleNo.asp?title=SURFACE%20WATER%20QUALITY%20STANDARDS&ID=62-302.532){target="_parent"} for Tampa Bay and are as follows :
 
 * Old Tampa Bay: 1.08 tons/million cubic meters  of water
 * Hillsborough Bay: 1.62 tons/million cubic meters  of water
