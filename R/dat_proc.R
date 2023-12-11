@@ -555,7 +555,7 @@ dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, entity, source, tn_load)
   
-save(npsdpsipsent, file = here('data/npsdpsipsent.RData'), version = 2)
+save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))
 
 # nps tn by land use ------------------------------------------------------
 
