@@ -455,55 +455,14 @@ save(npsdpsips, file = here('data/npsdpsips.RData'), version = 2)
 # nps, ips, dps by entity -------------------------------------------------
 
 # non-point source prior to 2017-2021 RA
-npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
-  group_by(entity, year, month) %>% 
-  summarise(
-    tn_load = sum(tnloadtons, na.rm = T), 
-    .groups = 'drop'
-  ) %>% 
-  mutate(
-    source = 'NPS'
-  ) %>% 
-  filter(year < 2017)
-
-# industrial point source prior to 2017-2021 RA
-ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
-  rename(
-    year = Year, 
-    month = Month
-  ) %>% 
-  group_by(entity, year, month) %>% 
-  summarise(
-    tn_load = sum(tnloadtons, na.rm = T), 
-    .groups = 'drop'
-  ) %>% 
-  mutate(
-    source = 'PS'
-  ) %>% 
-  filter(year < 2017)
-
-# domestic point source prior to 2017-2021 RA 
-dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
-  rename(
-    year = Year, 
-    month = Month
-  ) %>% 
-  mutate(
-    source = case_when(
-      grepl('REUSE$', source2) ~ 'DPS - reuse', 
-      grepl('SW$', source2) ~ 'DPS - end of pipe'
-    )
-  ) %>% 
-  group_by(entity, source, year, month) %>% 
-  summarise(
-    tn_load = sum(tnloadtons, na.rm = T), 
-    .groups = 'drop'
-  ) %>% 
+npsmosdat1 <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   filter(year < 2017)
 
 # non-point source 2017-2021 RA
 # source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
-npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>% 
+npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) 
+
+npsmosdat <- bind_rows(npsmosdat1, npsmosdat2) %>% 
   group_by(entity, year, month) %>% 
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
@@ -513,9 +472,15 @@ npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>%
     source = 'NPS'
   )
 
+# industrial point source prior to 2017-2021 RA
+ipsmosdat1 <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
+  filter(Year < 2017)
+
 # industrial point source 2017-2021 RA
 # source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
-ipsmosdat2 <- read_sas(here('data/raw/ips1721monthentbas.sas7bdat')) %>% 
+ipsmosdat2 <- read_sas(here('data/raw/ips1721monthentbas.sas7bdat')) 
+
+ipsmosdat <- bind_rows(ipsmosdat1, ipsmosdat2) %>%
   rename(
     year = Year, 
     month = Month
@@ -529,9 +494,15 @@ ipsmosdat2 <- read_sas(here('data/raw/ips1721monthentbas.sas7bdat')) %>%
     source = 'PS'
   )
 
+# domestic point source prior to 2017-2021 RA 
+dpsmosdat1 <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+  filter(Year < 2017)
+
 # domestic point source 2017-2021 RA
 # source at T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\2017-2021LUEntityLoads
-dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>% 
+dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat'))
+
+dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>% 
   rename(
     year = Year, 
     month = Month
@@ -547,10 +518,6 @@ dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>%
     tn_load = sum(tnloadtons, na.rm = T), 
     .groups = 'drop'
   )
-
-npsmosdat <- bind_rows(npsmosdat, npsmosdat2)
-ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2)
-dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
 
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, entity, source, tn_load)
