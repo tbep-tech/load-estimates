@@ -259,7 +259,42 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
   ) %>% 
   select(year, month, entity, source, tn_load = tnload)
 
-save(mosentdat, file = here('data/mosentdat.RData'), version = 2)
+# format corrected HFC/City of Tampa DPS
+
+# R-002 and R-003 are not counted (see T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\LoadingCodes&Datasets\2021\PointSource2021\Domestic2021\1_DPS_2021a_20221025.sas)
+# flow in million gallons per day
+# multiply flow by day in month to get million gallons per month
+# multiply flow by 3785.412 to get cubic meters per month
+# multiply N by flow and divide by 1000 to get kg N per month 
+#   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
+#   same as dividing by 1000
+newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>% 
+  select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
+  rename(
+    `DPS - end of pipe` = matches('D-001'), 
+    `DPS - reuse` = matches('R-001')
+  ) %>% 
+  pivot_longer(names_to = 'source', values_to = 'flow_mgd', -c(Year, Month, `Total N`)) %>% 
+  mutate(
+    dys = days_in_month(ymd(paste(Year, Month, '01', sep = '-'))), 
+    flow_mgm = flow_mgd * dys, # million gallons per month
+    flow_m3m = flow_mgm * 3785.412, # cubic meters per month
+    tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
+    tn_load_tons = tn_load_kg / 907.1847, 
+    entity = 'Tampa'
+  ) %>% 
+  filter(Year > 2016 & Year < 2022) %>% 
+  summarise(
+    tn_load = sum(tn_load_tons), 
+    .by = c('Year', 'Month', 'entity')
+  ) %>%
+  mutate(source = 'DPS') %>% 
+  select(year = Year, month = Month, entity, source, tn_load)
+
+# swap out old hfc/city of tampa with new
+mosentdat[mosentdat$entity == 'Tampa' & mosentdat$source == 'DPS', ] <- newdat
+
+save(mosentdat, file = here('data/mosentdat.RData'))
 
 # all monthly hydro load --------------------------------------------------
 
@@ -454,6 +489,7 @@ save(npsdpsips, file = here('data/npsdpsips.RData'), version = 2)
 
 # nps, ips, dps by entity -------------------------------------------------
 
+##
 # non-point source prior to 2017-2021 RA
 npsmosdat1 <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   filter(year < 2017)
@@ -472,6 +508,7 @@ npsmosdat <- bind_rows(npsmosdat1, npsmosdat2) %>%
     source = 'NPS'
   )
 
+##
 # industrial point source prior to 2017-2021 RA
 ipsmosdat1 <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
   filter(Year < 2017)
@@ -494,6 +531,7 @@ ipsmosdat <- bind_rows(ipsmosdat1, ipsmosdat2) %>%
     source = 'PS'
   )
 
+##
 # domestic point source prior to 2017-2021 RA 
 dpsmosdat1 <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
   filter(Year < 2017)
@@ -519,6 +557,39 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
     .groups = 'drop'
   )
 
+# format corrected HFC/City of Tampa DPS
+
+# R-002 and R-003 are not counted (see T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\LoadingCodes&Datasets\2021\PointSource2021\Domestic2021\1_DPS_2021a_20221025.sas)
+# flow in million gallons per day
+# multiply flow by day in month to get million gallons per month
+# multiply flow by 3785.412 to get cubic meters per month
+# multiply N by flow and divide by 1000 to get kg N per month 
+#   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
+#   same as dividing by 1000
+newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>% 
+  select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
+  rename(
+    `DPS - end of pipe` = matches('D-001'), 
+    `DPS - reuse` = matches('R-001')
+  ) %>% 
+  pivot_longer(names_to = 'source', values_to = 'flow_mgd', -c(Year, Month, `Total N`)) %>% 
+  mutate(
+    dys = days_in_month(ymd(paste(Year, Month, '01', sep = '-'))), 
+    flow_mgm = flow_mgd * dys, # million gallons per month
+    flow_m3m = flow_mgm * 3785.412, # cubic meters per month
+    tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
+    tn_load_tons = tn_load_kg / 907.1847, 
+    entity = 'Tampa'
+  ) %>% 
+  filter(Year < 2022) %>% 
+  select(entity, source, year = Year, month = Month, tn_load = tn_load_tons) %>% 
+  arrange(source)
+
+# swap out old hfc/city of tampa with new
+dpsmosdat[dpsmosdat$year > 2011 & dpsmosdat$entity == 'Tampa', ] <- newdat
+
+##
+# combine all
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, entity, source, tn_load)
   
