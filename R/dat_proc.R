@@ -566,7 +566,7 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 # multiply N by flow and divide by 1000 to get kg N per month 
 #   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
 #   same as dividing by 1000
-newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>% 
+newdat <- read_csv(here('data/raw/HFC_update.csv')) %>% 
   select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
   rename(
     `DPS - end of pipe` = matches('D-001'), 
@@ -578,7 +578,7 @@ newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>%
     flow_mgm = flow_mgd * dys, # million gallons per month
     flow_m3m = flow_mgm * 3785.412, # cubic meters per month
     tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
-    tn_load_tons = tn_load_kg / 907.1847, 
+    tn_load_tons = 0.3 * tn_load_kg / 907.1847, 
     entity = 'Tampa'
   ) %>% 
   filter(Year < 2022) %>% 
