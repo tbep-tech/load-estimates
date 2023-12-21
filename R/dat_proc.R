@@ -281,6 +281,7 @@ newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>%
     flow_m3m = flow_mgm * 3785.412, # cubic meters per month
     tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
     tn_load_tons = tn_load_kg / 907.1847, 
+    tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
     entity = 'Tampa'
   ) %>% 
   filter(Year > 2016 & Year < 2022) %>% 
@@ -578,7 +579,8 @@ newdat <- read_csv(here('data/raw/HFC_update.csv')) %>%
     flow_mgm = flow_mgd * dys, # million gallons per month
     flow_m3m = flow_mgm * 3785.412, # cubic meters per month
     tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
-    tn_load_tons = 0.3 * tn_load_kg / 907.1847, 
+    tn_load_tons = tn_load_kg / 907.1847, 
+    tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
     entity = 'Tampa'
   ) %>% 
   filter(Year < 2022) %>% 
