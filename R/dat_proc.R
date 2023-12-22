@@ -239,7 +239,7 @@ save(mosdat, file = here('data/mosdat.RData'), version = 2)
 
 # original at T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-9/datastick_deliverables/2017-2021Annual&MonthlyLoadDatasets/MakeMonthAnnDatasets/Monthly/monthly1721entityloaddataset.sas7bdat
 mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>% 
-  select(entity, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
+  select(bayseg, entity, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
   mutate(
     source = case_when(
       source == 'Atmospheric Deposition' ~ 'AD', 
@@ -249,7 +249,7 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
       source == 'Non-Point Source' ~ 'NPS'
     )
   ) %>% 
-  group_by(entity, year, month, source) %>% 
+  group_by(entity, year, month, source, bayseg) %>% 
   summarise(
     tnload = sum(tnloadtons), 
     tpload = sum(tploadtons), 
@@ -257,7 +257,7 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
     bodload = sum(bodloadtons),
     .groups = 'drop'
   ) %>% 
-  select(year, month, entity, source, tn_load = tnload)
+  select(year, month, bayseg, entity, source, tn_load = tnload)
 
 # format corrected HFC/City of Tampa DPS
 
@@ -284,18 +284,25 @@ newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>%
     tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
     tn_load_tons = tn_load_kg / 907.1847, 
     tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
-    entity = 'Tampa'
+    entity = 'Tampa', 
+    bayseg = 2 # HB
   ) %>% 
   filter(Year > 2016 & Year < 2022) %>% 
   summarise(
     tn_load = sum(tn_load_tons), 
-    .by = c('Year', 'Month', 'entity')
+    .by = c('Year', 'Month', 'entity', 'bayseg')
   ) %>%
   mutate(source = 'DPS') %>% 
-  select(year = Year, month = Month, entity, source, tn_load)
+  select(year = Year, month = Month, bayseg, entity, source, tn_load)
 
 # swap out old hfc/city of tampa with new
 mosentdat[mosentdat$entity == 'Tampa' & mosentdat$source == 'DPS', ] <- newdat
+
+mosentdat <- mosentdat %>% 
+  mutate(
+    bayseg = factor(bayseg, levels = segidmos$bayseg, labels = segidmos$bay_segment), 
+    bayseg = as.character(bayseg)
+  )
 
 save(mosentdat, file = here('data/mosentdat.RData'))
 
@@ -502,7 +509,7 @@ npsmosdat1 <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
 npsmosdat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) 
 
 npsmosdat <- bind_rows(npsmosdat1, npsmosdat2) %>% 
-  group_by(entity, year, month) %>% 
+  group_by(entity, year, month, bayseg) %>% 
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
     .groups = 'drop'
@@ -525,7 +532,7 @@ ipsmosdat <- bind_rows(ipsmosdat1, ipsmosdat2) %>%
     year = Year, 
     month = Month
   ) %>% 
-  group_by(entity, year, month) %>% 
+  group_by(entity, year, month, bayseg) %>% 
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
     .groups = 'drop'
@@ -554,7 +561,7 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
       grepl('SW$', source2) ~ 'DPS - end of pipe'
     )
   ) %>% 
-  group_by(entity, source, year, month) %>% 
+  group_by(entity, source, year, month, bayseg) %>% 
   summarise(
     tn_load = sum(tnloadtons, na.rm = T), 
     .groups = 'drop'
@@ -585,10 +592,11 @@ newdat <- read_csv(here('data/raw/HFC_update.csv')) %>%
     tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
     tn_load_tons = tn_load_kg / 907.1847, 
     tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
-    entity = 'Tampa'
+    entity = 'Tampa', 
+    bayseg = 2 # HB
   ) %>% 
   filter(Year < 2022) %>% 
-  select(entity, source, year = Year, month = Month, tn_load = tn_load_tons) %>% 
+  select(entity, source, year = Year, month = Month, bayseg, tn_load = tn_load_tons) %>% 
   arrange(source)
 
 # swap out old hfc/city of tampa with new
@@ -597,7 +605,11 @@ dpsmosdat[dpsmosdat$year > 2011 & dpsmosdat$entity == 'Tampa', ] <- newdat
 ##
 # combine all
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
-  select(year, month, entity, source, tn_load)
+  select(year, month, bayseg, entity, source, tn_load) %>% 
+  mutate(
+    bayseg = factor(bayseg, levels = segidmos$bayseg, labels = segidmos$bay_segment),
+    bayseg = as.character(bayseg)
+  )
   
 save(npsdpsipsent, file = here('data/npsdpsipsent.RData'))
 

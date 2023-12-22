@@ -250,12 +250,10 @@ Data from the __Download all entity data__ button includes the following:
 
 * __*year*__: year of the estimate
 * __*month*__: month of the estimate
+* __*bayseg*__: bay segment where the load applies
 * __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
-* __*tp_load*__: total phosphorus load in tons / month
-* __*tss_load*__: total suspended solids load in tons / month
-* __*bod_load*__: biological oxygen demand in tons / month
 
 ## Total hydrologic load (monthly, 1985 - 2021) {.tabset}
 
@@ -428,6 +426,7 @@ Data from the __Download entity data__ button includes the following:
 
 * __*year*__: year of the estimate
 * __*month*__: month of the estimate
+* __*bayseg*__: bay segment where the load applies
 * __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / month
