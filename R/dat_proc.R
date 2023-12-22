@@ -19,6 +19,11 @@ segidmos <- tibble(
   bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')
 )
 
+segidall <- tibble(
+  bayseg = c(1, 2, 3, 4, 5, 6, 7, 55),
+  bay_segment = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Boca Ciega Bay', 'Terra Ceia Bay', 'Manatee River', 'Boca Ciega Bay South')
+)
+
 # coastal land use code lookup
 clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>% 
   select(CLUCSID, DESCRIPTION) %>% 
@@ -607,7 +612,7 @@ dpsmosdat[dpsmosdat$year > 2011 & dpsmosdat$entity == 'Tampa', ] <- newdat
 npsdpsipsent <- bind_rows(npsmosdat, ipsmosdat, dpsmosdat) %>% 
   select(year, month, bayseg, entity, source, tn_load) %>% 
   mutate(
-    bayseg = factor(bayseg, levels = segidmos$bayseg, labels = segidmos$bay_segment),
+    bayseg = factor(bayseg, levels = segidall$bayseg, labels = segidall$bay_segment),
     bayseg = as.character(bayseg)
   )
   
