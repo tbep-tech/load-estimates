@@ -268,6 +268,8 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
 # multiply N by flow and divide by 1000 to get kg N per month 
 #   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
 #   same as dividing by 1000
+# dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
+# see line 473 2_DPS_2021b_20221025.sas
 newdat <- read_csv(here('data/raw/HFC_update.csv'), ) %>% 
   select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
   rename(
@@ -567,6 +569,8 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 # multiply N by flow and divide by 1000 to get kg N per month 
 #   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
 #   same as dividing by 1000
+# dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
+# see line 473 2_DPS_2021b_20221025.sas
 newdat <- read_csv(here('data/raw/HFC_update.csv')) %>% 
   select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
   rename(
