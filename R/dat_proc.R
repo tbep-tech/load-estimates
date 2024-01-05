@@ -272,7 +272,7 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
 newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
   filter(Year > 2016 & Year < 2022) %>% 
   summarise(
-    tn_load = sum(tn_load_tons), 
+    tn_load = sum(tn_load), 
     .by = c('Year', 'Month', 'entity', 'bayseg')
   ) %>%
   mutate(source = 'DPS') %>% 
@@ -555,7 +555,7 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 # calculate dps load data from raw
 newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
   filter(Year < 2022) %>% 
-  select(entity, source, year = Year, month = Month, bayseg, tn_load = tn_load_tons) %>% 
+  select(entity, source, year = Year, month = Month, bayseg, tn_load) %>% 
   arrange(source)
 
 # swap out old hfc/city of tampa with new

@@ -484,29 +484,43 @@ hy_tab <- function(datin){
 # multiply N by flow and divide by 1000 to get kg N per month 
 #   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
 #   same as dividing by 1000
-# dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
-# see line 473 2_DPS_2021b_20221025.sas
+# TN dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
+# TP, TSS, BOD  dps reuse is multiplied by 0.05 for land application attenuation factor (95%)
+# see line 473, 475, 477, 479 2_DPS_2021b_20221025.sas
 #
 # path is location to raw csv
+# 
+# output is load for tp, tn, tss, bod as tons per month
+# hydro load is cubic meters per month
 dps_est <- function(path){
   
   out <- read_csv(path) %>% 
-    select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
+    select(Year, Month, matches('D-001|R-001'), `Total N`, `Total P`, TSS, BOD) %>% 
     rename(
       `DPS - end of pipe` = matches('D-001'), 
       `DPS - reuse` = matches('R-001')
     ) %>% 
-    pivot_longer(names_to = 'source', values_to = 'flow_mgd', -c(Year, Month, `Total N`)) %>% 
+    pivot_longer(names_to = 'source', values_to = 'flow_mgd', c(`DPS - end of pipe`, `DPS - reuse`)) %>% 
+    pivot_longer(names_to = 'var', values_to = 'conc_mgl', c(`Total N`:BOD)) %>% 
     mutate(
       dys = days_in_month(ymd(paste(Year, Month, '01', sep = '-'))), 
       flow_mgm = flow_mgd * dys, # million gallons per month
       flow_m3m = flow_mgm * 3785.412, # cubic meters per month
-      tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
-      tn_load_tons = tn_load_kg / 907.1847, 
-      tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
+      load_kg = conc_mgl * flow_m3m / 1000, # kg var per month, 
+      load_tons = load_kg / 907.1847, # kg to tons,
+      load_tons = case_when(
+        grepl('reuse', source) & var == 'Total N' ~ load_tons * 0.3, 
+        grepl('reuse', source) & var %in% c('Total P', 'TSS', 'BOD') ~ load_tons * 0.05, 
+        T ~ load_tons
+      ),
       entity = 'Tampa', 
-      bayseg = 2 # HB
-    ) 
+      bayseg = 2, # HB
+      var = factor(var, levels = c('Total N', 'Total P', 'TSS', 'BOD'), 
+                   labels = c('tn_load', 'tp_load', 'tss_load', 'bod_load')
+      )
+    ) %>% 
+    select(-flow_mgm, -flow_mgd, -conc_mgl, -dys, -load_kg) %>% 
+    pivot_wider(names_from = 'var', values_from = 'load_tons')
   
   return(out)
   
