@@ -474,3 +474,40 @@ hy_tab <- function(datin){
   return(out)
   
 }
+
+# calculate dps reuse and end of pipe from city of tampa raw data (used in R/dat_proc.R)
+#
+# R-002 and R-003 are not counted (see T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\LoadingCodes&Datasets\2021\PointSource2021\Domestic2021\1_DPS_2021a_20221025.sas)
+# flow in million gallons per day
+# multiply flow by day in month to get million gallons per month
+# multiply flow by 3785.412 to get cubic meters per month
+# multiply N by flow and divide by 1000 to get kg N per month 
+#   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
+#   same as dividing by 1000
+# dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
+# see line 473 2_DPS_2021b_20221025.sas
+#
+# path is location to raw csv
+dps_est <- function(path){
+  
+  out <- read_csv(path) %>% 
+    select(Year, Month, matches('D-001|R-001'), `Total N`) %>% 
+    rename(
+      `DPS - end of pipe` = matches('D-001'), 
+      `DPS - reuse` = matches('R-001')
+    ) %>% 
+    pivot_longer(names_to = 'source', values_to = 'flow_mgd', -c(Year, Month, `Total N`)) %>% 
+    mutate(
+      dys = days_in_month(ymd(paste(Year, Month, '01', sep = '-'))), 
+      flow_mgm = flow_mgd * dys, # million gallons per month
+      flow_m3m = flow_mgm * 3785.412, # cubic meters per month
+      tn_load_kg = `Total N` * flow_m3m / 1000, # kg N per month
+      tn_load_tons = tn_load_kg / 907.1847, 
+      tn_load_tons = ifelse(source == 'DPS - reuse', tn_load_tons * 0.3, tn_load_tons),
+      entity = 'Tampa', 
+      bayseg = 2 # HB
+    ) 
+  
+  return(out)
+  
+}
