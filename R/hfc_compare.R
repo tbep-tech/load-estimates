@@ -45,7 +45,7 @@ olddat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 #   same as dividing by 1000
 newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
   filter(Year < 2022) %>% 
-  select(year = Year, month = Month, entity, source, tn_load = tn_load_tons)
+  select(year = Year, month = Month, entity, source, tn_load = tn_load)
 
 # compare -------------------------------------------------------------------------------------
 

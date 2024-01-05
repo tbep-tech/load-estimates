@@ -487,6 +487,9 @@ hy_tab <- function(datin){
 # TN dps reuse is multiplied by 0.3 for land application attenuation factor (70%)
 # TP, TSS, BOD  dps reuse is multiplied by 0.05 for land application attenuation factor (95%)
 # see line 473, 475, 477, 479 2_DPS_2021b_20221025.sas
+# 
+# hydro load (m3 / mo) is also attenuated for the reuse, multiplied by 0.6 (40% attenutation)
+# see line 471 2_DPS_2021b_20221025.sas
 #
 # path is location to raw csv
 # 
@@ -512,6 +515,10 @@ dps_est <- function(path){
         grepl('reuse', source) & var == 'Total N' ~ load_tons * 0.3, 
         grepl('reuse', source) & var %in% c('Total P', 'TSS', 'BOD') ~ load_tons * 0.05, 
         T ~ load_tons
+      ),
+      flow_m3m = case_when(
+        grepl('reuse', source) ~ flow_m3m * 0.6, 
+        T ~ flow_m3m
       ),
       entity = 'Tampa', 
       bayseg = 2, # HB
