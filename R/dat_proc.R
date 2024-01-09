@@ -31,6 +31,14 @@ clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>%
   select(CLUCSID, DESCRIPTION) %>% 
   unique
 
+# updated hfc/city of tampa data --------------------------------------------------------------
+
+# see email from JH, 10/4/23
+# dps_est function includes methods from RP SAS code specific to city of tampa data
+# these data are applied to many below for the correction to DPS load data
+dpscorr <- dps_est(here('data/raw/HFC_update.csv'))
+
+save(dpscorr, file = here('data/dpscorr.RData'))
 
 # tn load by source for major bay segments ----------------------------------------------------
 
@@ -244,6 +252,9 @@ save(mosdat, file = here('data/mosdat.RData'), version = 2)
 
 # all monthly tn, tp, tss, bod estimates by entity ------------------------
 
+# hfc/city of tampa corrected data
+load(file = here('data/dpscorr.RData'))
+
 # original at T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-9/datastick_deliverables/2017-2021Annual&MonthlyLoadDatasets/MakeMonthAnnDatasets/Monthly/monthly1721entityloaddataset.sas7bdat
 mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>% 
   select(bayseg, entity, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
@@ -268,8 +279,8 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
 
 # format corrected HFC/City of Tampa DPS
 
-# calculate dps load data from raw
-newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
+# hfc/city of tampa corrected data
+newdat <- dpscorr %>% 
   filter(Year > 2016 & Year < 2022) %>% 
   summarise(
     tn_load = sum(tn_load), 
@@ -482,6 +493,9 @@ save(npsdpsips, file = here('data/npsdpsips.RData'), version = 2)
 
 # nps, ips, dps by entity -------------------------------------------------
 
+# hfc/city of tampa corrected data
+load(file = here('data/dpscorr.RData'))
+
 ##
 # non-point source prior to 2017-2021 RA
 npsmosdat1 <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
@@ -553,7 +567,7 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 # format corrected HFC/City of Tampa DPS
 
 # calculate dps load data from raw
-newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
+newdat <- dpscorr %>% 
   filter(Year < 2022) %>% 
   select(entity, source, year = Year, month = Month, bayseg, tn_load) %>% 
   arrange(source)

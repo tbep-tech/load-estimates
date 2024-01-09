@@ -8,6 +8,9 @@ library(haven)
 
 source(here('R/funcs.R'))
 
+# hfc/city of tampa corrected data
+load(file = here('data/dpscorr.RData'))
+
 # original data -------------------------------------------------------------------------------
 
 # domestic point source prior to 2017-2021 RA 
@@ -36,14 +39,8 @@ olddat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 
 # updated data --------------------------------------------------------------------------------
 
-# R-002 and R-003 are not counted (see T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\datastick_deliverables\LoadingCodes&Datasets\2021\PointSource2021\Domestic2021\1_DPS_2021a_20221025.sas)
-# flow in million gallons per day
-# multiply flow by day in month to get million gallons per month
-# multiply flow by 3785.412 to get cubic meters per month
-# multiply N by flow and divide by 1000 to get kg N per month 
-#   multiply m3 by 1000 to get L, then divide by 1e6 to convert mg to kg)
-#   same as dividing by 1000
-newdat <- dps_est(here('data/raw/HFC_update.csv')) %>% 
+# hfc/city of tampa corrected data
+newdat <- dpscorr %>% 
   filter(Year < 2022) %>% 
   select(year = Year, month = Month, entity, source, tn_load = tn_load)
 
