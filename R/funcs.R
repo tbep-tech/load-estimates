@@ -488,23 +488,28 @@ hy_tab <- function(datin){
 # TP, TSS, BOD  dps reuse is multiplied by 0.05 for land application attenuation factor (95%)
 # see line 473, 475, 477, 479 2_DPS_2021b_20221025.sas
 # 
+# BOD is reported as CBOD starting nov 2022, see JH email 10/4/23
+#
 # hydro load (m3 / mo) is also attenuated for the reuse, multiplied by 0.6 (40% attenutation)
 # see line 471 2_DPS_2021b_20221025.sas
 #
 # path is location to raw csv
 # 
 # output is load for tp, tn, tss, bod as tons per month
-# hydro load is cubic meters per month
+# hydro load is million (10^6 or 1e6) cubic meters per month
 dps_est <- function(path){
-  
-  out <- read_csv(path) %>% 
+
+  out <- read_excel(path, sheet = 'Data') %>% 
     select(Year, Month, matches('D-001|R-001'), `Total N`, `Total P`, TSS, BOD) %>% 
     rename(
       `DPS - end of pipe` = matches('D-001'), 
       `DPS - reuse` = matches('R-001')
     ) %>% 
+    na.omit() %>% 
+    filter(Year != 'Year') %>% 
     pivot_longer(names_to = 'source', values_to = 'flow_mgd', c(`DPS - end of pipe`, `DPS - reuse`)) %>% 
     pivot_longer(names_to = 'var', values_to = 'conc_mgl', c(`Total N`:BOD)) %>% 
+    mutate_at(vars(Year, Month, flow_mgd, conc_mgl), as.numeric) %>% 
     mutate(
       dys = days_in_month(ymd(paste(Year, Month, '01', sep = '-'))), 
       flow_mgm = flow_mgd * dys, # million gallons per month
@@ -524,11 +529,95 @@ dps_est <- function(path){
       bayseg = 2, # HB
       var = factor(var, levels = c('Total N', 'Total P', 'TSS', 'BOD'), 
                    labels = c('tn_load', 'tp_load', 'tss_load', 'bod_load')
-      )
+      ), 
+      hy_load = flow_m3m / 1e6 # flow as mill m3 /month
     ) %>% 
-    select(-flow_mgm, -flow_mgd, -conc_mgl, -dys, -load_kg) %>% 
-    pivot_wider(names_from = 'var', values_from = 'load_tons')
-  
+    select(-flow_mgm, -flow_mgd, -conc_mgl, -dys, -load_kg, -flow_m3m) %>%
+    pivot_wider(names_from = 'var', values_from = 'load_tons') %>% 
+    select(Year, Month, entity, source, bayseg, tn_load, tp_load, tss_load, bod_load, hy_load)
+
   return(out)
   
 }
+
+# calculate difference between updated and original dps data for hfc/city of tampa
+# tn, tp, tss, bod, hy
+# tn, tp, tss, bod as tons
+# hy as 10^6 m^3
+#
+# results as per month or per year based on agg fun
+# total logical indicating if diffs are separated as reuse/end of pipe or total of both
+dpsdiff_fun <- function(dpsupdate, annual = F, total = F){
+  
+  ##
+  # original data
+  # domestic point source prior to 2017-2021 RA 
+  dpsmosdat1 <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
+    filter(Year < 2017)
+  dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) 
+  
+  olddat <- bind_rows(dpsmosdat1, dpsmosdat2) %>% 
+    filter(entity == 'Tampa') %>% 
+    filter(Year > 2011) %>%  # earliest year in updated data is 2012
+    mutate(
+      source = case_when(
+        grepl('REUSE$', source2) ~ 'DPS - reuse', 
+        grepl('SW$', source2) ~ 'DPS - end of pipe'
+      )
+    ) %>% 
+    select(
+      Year,
+      Month,
+      entity, 
+      source, 
+      tn_load = tnloadtons, 
+      tp_load = tploadtons, 
+      tss_load = tssloadtons, 
+      bod_load = bodloadtons,
+      hy_load = h2oload10e6m3
+    )
+  
+  ##
+  # hfc/city of tampa updated data
+  newdat <- dpsupdate %>% 
+    filter(Year < 2022)
+  
+  ##
+  # combine
+  
+  # prep for plot
+  cmbdat <- full_join(olddat, newdat, by = c('Year', 'Month', 'entity', 'source'), suffix = c('.old', '.new')) %>% 
+    pivot_longer(names_to = 'var', values_to = 'val', -c(Year, Month, entity, source, bayseg)) %>%
+    separate(var, into = c('var', 'type'), sep = '\\.') %>% 
+    pivot_wider(names_from = type, values_from = val)
+  
+  # get total dps if true
+  if(total)
+    cmbdat <- cmbdat %>% 
+      mutate(
+        source = 'DPS'
+      ) %>% 
+      summarise(
+        old = sum(old), 
+        new = sum(new), 
+        .by = c(Year, Month, entity, source, bayseg, var)
+      )
+    
+  # get annual loads if true
+  if(annual)
+    cmbdat <- cmbdat %>% 
+      summarize(
+        old = sum(old), 
+        new = sum(new),
+        .by = c(Year, entity, source, bayseg, var)
+      )
+  
+  # get differece between new and original data
+  out <- cmbdat %>% 
+    mutate(
+      diffv = new - old
+    )
+  
+  return(out)
+  
+}      
