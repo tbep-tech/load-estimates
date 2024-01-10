@@ -41,6 +41,9 @@ save(dpsupdate, file = here('data/dpsupdate.RData'))
 
 # tn load by source for major bay segments ----------------------------------------------------
 
+# hfc/city of tampa updated data
+load(file = here('data/dpsupdate.RData'))
+
 # 85 - 20data
 # original data from here T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-8/LoadingCodes&Datasets2020/TotalLoads2020'
 ad8520 <- read_sas(here('data/raw/ad_8520.sas7bdat'))
@@ -58,6 +61,19 @@ dat <- bind_rows(ad8520, dps8520, ips8520, nps8520, gws8520) %>%
     source = SOURCE
   ) %>% 
   left_join(segidann, by = 'BAY_SEG') 
+
+# correction to dat from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = T, total = T, varsel = 'tn_load') %>% 
+  filter(year < 2021) %>% 
+  select(-entity) %>% 
+  mutate(source = 'DPS')
+
+dat <- dat %>% 
+  left_join(dpscorr, by = c('year', 'source', 'bay_segment')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv)
 
 # totals across all segments
 tots <- dat %>% 
@@ -101,7 +117,20 @@ loadra1721 <- read.csv(here('data/raw/totn1721_segsource.csv')) %>%
     tn_load = sum(tn_load), 
     .groups = 'drop'
   )
-  
+
+# correction to loadra1721 from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = T, total = T, varsel = 'tn_load') %>% 
+  filter(year > 2016 & year < 2022) %>% 
+  select(-entity) %>% 
+  mutate(source = 'DPS')
+
+loadra1721 <- loadra1721 %>% 
+  left_join(dpscorr, by = c('year', 'source', 'bay_segment')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv)
+
 loadra1721tots <- loadra1721 %>% 
   group_by(year, source) %>% 
   summarise(
@@ -117,6 +146,9 @@ tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots) %>%
 save(tnanndat, file = 'data/tnanndat.RData', version = 2)
 
 # annual totals -----------------------------------------------------------
+
+# hfc/city of tampa updated data
+load(file = here('data/dpsupdate.RData'))
 
 totanndatpre <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>% 
   mutate(
@@ -141,11 +173,25 @@ totanndatpre <- read_sas('data/raw/tb_rasegsanntntph2o_8521.sas7bdat') %>%
     hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
+  filter(year < 2017)
+
+# correction to totanndatpre from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = T, total = T, varsel = c('tn_load', 'tp_load', 'hy_load')) %>% 
+  filter(year < 2017) %>% 
+  select(-entity, -source)
+
+totanndatpre <- totanndatpre %>% 
+  left_join(dpscorr, by = c('year', 'bay_segment')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv),
+    tp_load = ifelse(is.na(tp_load_diffv), tp_load, tp_load + tp_load_diffv),
+    hy_load = ifelse(is.na(hy_load_diffv), hy_load, hy_load + hy_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv, -tp_load_diffv, -hy_load_diffv) %>% 
   mutate(
     tnhy = tn_load / hy_load, 
     tphy = tp_load / hy_load
-  ) %>% 
-  filter(year < 2017)
+  )  
 
 # 2017 - 2022 RA period (from updated file)
 # source is here T:\03_BOARDS_COMMITTEES\05_TBNMC\2022_RA_Update\01_FUNDING_OUT\DELIVERABLES\TO-9\Loads1721_DocTables\Loads1721_DocTables
@@ -170,15 +216,29 @@ totanndatpos <- read.csv(here('data/raw/totn1721_segsource.csv')) %>%
     tp_load = sum(tp_load, na.rm = T), 
     hy_load = sum(hy_load, na.rm = T),
     .groups = 'drop'
-  ) %>% 
-  mutate(
-    tnhy = tn_load / hy_load,      
-    tphy = tp_load / hy_load
   )
+
+# correction to totanndatos from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = T, total = T, varsel = c('tn_load', 'tp_load', 'hy_load')) %>% 
+  filter(year > 2016 & year < 2022) %>% 
+  select(-entity, -source)
+
+totanndatpos <- totanndatpos %>% 
+  left_join(dpscorr, by = c('year', 'bay_segment')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv),
+    tp_load = ifelse(is.na(tp_load_diffv), tp_load, tp_load + tp_load_diffv),
+    hy_load = ifelse(is.na(hy_load_diffv), hy_load, hy_load + hy_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv, -tp_load_diffv, -hy_load_diffv) %>% 
+  mutate(
+    tnhy = tn_load / hy_load, 
+    tphy = tp_load / hy_load
+  )  
 
 totanndat <- bind_rows(totanndatpre, totanndatpos)
 
-# hy dat prior to 2012, sum by segments
+# totals sum by segments
 allseg <- totanndat %>% 
   group_by(year) %>% 
   summarise(
@@ -200,6 +260,9 @@ totanndat <- totanndat %>%
 save(totanndat, file = 'data/totanndat.RData', version = 2)
 
 # all monthly tn, tp, tss, bod estimates ----------------------------------
+
+# hfc/city of tampa updated data
+load(file = here('data/dpsupdate.RData'))
 
 # original at T:/03_BOARDS_COMMITTEES/05_TBNMC/2022_RA_Update/01_FUNDING_OUT/DELIVERABLES/TO-9/datastick_deliverables/2017-2021Annual&MonthlyLoadDatasets/MakeMonthAnnDatasets/Monthly/monthly1721entityloaddataset.sas7bdat
 mosdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>% 
@@ -232,6 +295,23 @@ mosdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>%
     bod_load = bodload,
     bay_segment
   )
+
+# correction to mosdat from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = T, varsel = c('tn_load', 'tp_load', 'tss_load', 'bod_load')) %>% 
+  filter(year > 2016 & year < 2022) %>% 
+  select(-entity, -source) %>% 
+  mutate(source = 'DPS')
+
+# add correction
+mosdat <- mosdat %>% 
+  left_join(dpscorr, by = c('source', 'year', 'month', 'bay_segment')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv),
+    tp_load = ifelse(is.na(tp_load_diffv), tp_load, tp_load + tp_load_diffv),
+    tss_load = ifelse(is.na(tss_load_diffv), tss_load, tss_load + tss_load_diffv),
+    bod_load = ifelse(is.na(bod_load_diffv), bod_load, bod_load + bod_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv, -tp_load_diffv, -tss_load_diffv, -bod_load_diffv)
 
 totsmo <- mosdat %>% 
   group_by(year, month, source) %>% 
@@ -301,6 +381,9 @@ save(mosentdat, file = here('data/mosentdat.RData'))
 
 # all monthly hydro load --------------------------------------------------
 
+# hfc/city of tampa updated data
+load(file = here('data/dpsupdate.RData'))
+
 dat1 <- read_excel(here('data/raw/TotH2O_2020_Monthly4Seg.xlsx')) %>% 
   mutate(
     bay_segment = factor(Segment, levels = c('1', '2', '3', '4'), labels = c('OTB', 'HB', 'MTB', 'LTB'))
@@ -342,6 +425,19 @@ mohydat <- bind_rows(dat1, dat2, dat3, dat4, dat5) %>%
     hy_load_106_m3_mo = hy_load
   )
 
+# correction to mohydat from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = T, varsel = 'hy_load') %>% 
+  filter(year > 2016 & year < 2022) %>% 
+  select(-entity, -source)
+
+# add correction
+mohydat <- mohydat %>% 
+  left_join(dpscorr, by = c('year', 'month', 'bay_segment')) %>% 
+  mutate(
+    hy_load_106_m3_mo = ifelse(is.na(hy_load_diffv), hy_load_106_m3_mo, hy_load_106_m3_mo + hy_load_diffv)
+  ) %>% 
+  select(-hy_load_diffv)
+  
 allmohydat <- mohydat %>% 
   group_by(year, month) %>% 
   summarise(
@@ -380,6 +476,20 @@ oldmohydat <- read_excel(here('data/raw/Tampa Bay Loadings 1985-2016.xlsx'), she
     hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
     .by = c(year, month, bay_segment)
   )
+
+# correction to oldmohydat from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = T, varsel = 'hy_load') %>% 
+  filter(year < 2017) %>% 
+  select(-entity, -source)
+
+# add correction
+oldmohydat <- oldmohydat %>% 
+  left_join(dpscorr, by = c('year', 'month', 'bay_segment')) %>% 
+  mutate(
+    hy_load_106_m3_mo = ifelse(is.na(hy_load_diffv), hy_load_106_m3_mo, hy_load_106_m3_mo + hy_load_diffv)
+  ) %>% 
+  select(-hy_load_diffv)
+
 alloldmohydat <- oldmohydat %>% 
   summarise(
     hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
@@ -397,6 +507,9 @@ save(mohydat, file = here('data/mohydat.RData'))
 # write.csv(mohydat, '~/Desktop/mohydat.csv', quote = F, row.names = F)
 
 # monthly ips, dps, nps ---------------------------------------------------
+
+# hfc/city of tampa updated data
+load(file = here('data/dpsupdate.RData'))
 
 # non-point source prior to 2017-2021 RA
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
@@ -460,6 +573,16 @@ dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>%
 npsmosdat <- bind_rows(npsmosdat, npsmosdat2)
 ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2)
 dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
+
+# correction to dpsmosdat from hfc update
+dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = F, varsel = 'tn_load')
+
+dpsmosdat <- dpsmosdat %>% 
+  left_join(dpscorr, by = c('year', 'month', 'bay_segment', 'entity', 'source')) %>% 
+  mutate(
+    tn_load = ifelse(is.na(tn_load_diffv), tn_load, tn_load + tn_load_diffv)
+  ) %>% 
+  select(-tn_load_diffv)
 
 save(npsmosdat, file = here('data/npsmosdat.RData'), version = 2)
 save(ipsmosdat, file = here('data/ipsmosdat.RData'), version = 2)

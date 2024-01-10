@@ -526,7 +526,7 @@ dps_est <- function(path){
         T ~ flow_m3m
       ),
       entity = 'Tampa', 
-      bayseg = 2, # HB
+      bay_segment = 'Hillsborough Bay', 
       var = factor(var, levels = c('Total N', 'Total P', 'TSS', 'BOD'), 
                    labels = c('tn_load', 'tp_load', 'tss_load', 'bod_load')
       ), 
@@ -534,7 +534,7 @@ dps_est <- function(path){
     ) %>% 
     select(-flow_mgm, -flow_mgd, -conc_mgl, -dys, -load_kg, -flow_m3m) %>%
     pivot_wider(names_from = 'var', values_from = 'load_tons') %>% 
-    select(Year, Month, entity, source, bayseg, tn_load, tp_load, tss_load, bod_load, hy_load)
+    select(Year, Month, entity, source, bay_segment, tn_load, tp_load, tss_load, bod_load, hy_load)
 
   return(out)
   
@@ -547,8 +547,9 @@ dps_est <- function(path){
 #
 # results as per month or per year based on agg fun
 # total logical indicating if diffs are separated as reuse/end of pipe or total of both
-dpsdiff_fun <- function(dpsupdate, annual = F, total = F){
-  
+# optional varsel as character string for one to many loading variables to return only as diff in wide format
+dpsdiff_fun <- function(dpsupdate, annual = F, total = F, varsel = NULL){
+
   ##
   # original data
   # domestic point source prior to 2017-2021 RA 
@@ -587,9 +588,10 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F){
   
   # prep for plot
   cmbdat <- full_join(olddat, newdat, by = c('Year', 'Month', 'entity', 'source'), suffix = c('.old', '.new')) %>% 
-    pivot_longer(names_to = 'var', values_to = 'val', -c(Year, Month, entity, source, bayseg)) %>%
+    pivot_longer(names_to = 'var', values_to = 'val', -c(Year, Month, entity, source, bay_segment)) %>%
     separate(var, into = c('var', 'type'), sep = '\\.') %>% 
-    pivot_wider(names_from = type, values_from = val)
+    pivot_wider(names_from = type, values_from = val) %>% 
+    rename(year = Year, month = Month)
   
   # get total dps if true
   if(total)
@@ -600,7 +602,7 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F){
       summarise(
         old = sum(old), 
         new = sum(new), 
-        .by = c(Year, Month, entity, source, bayseg, var)
+        .by = c(year, month, entity, source, bay_segment, var)
       )
     
   # get annual loads if true
@@ -609,14 +611,28 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F){
       summarize(
         old = sum(old), 
         new = sum(new),
-        .by = c(Year, entity, source, bayseg, var)
+        .by = c(year, entity, source, bay_segment, var)
       )
   
   # get differece between new and original data
   out <- cmbdat %>% 
     mutate(
       diffv = new - old
-    )
+    ) 
+  
+  # subset variables, return only diff in wide format
+  if(!is.null(varsel)){
+    
+    if(any(!varsel %in% c('tn_load', 'tp_load', 'tss_load', 'bod_load', 'hy_load')))
+      stop('varsel must be one to many of tn_load, tp_load, tss_load, bod_load, hy_load')
+   
+    out <- out %>% 
+      filter(var %in% varsel) %>% 
+      select(-new, -old) %>% 
+      mutate(var = paste0(var, '_diffv')) %>% 
+      pivot_wider(names_from = 'var', values_from = 'diffv')
+    
+  }
   
   return(out)
   
