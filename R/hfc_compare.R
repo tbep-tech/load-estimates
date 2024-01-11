@@ -17,10 +17,17 @@ load(file = here('data/dpsupdate.RData'))
 # get old and new data combined, load as tons/mo, except hydro as 10e3 m3/mo
 toplo <- dpsdiff_fun(dpsupdate, annual = F) %>% 
   mutate(
-    dt = ymd(paste(Year, Month, '01', sep = '-'))
+    dt = ymd(paste(year, month, '01', sep = '-'))
   ) %>% 
   select(-diffv) %>% 
-  pivot_longer(values_to = 'val', names_to = 'type', cols = c('old', 'new'))
+  pivot_longer(values_to = 'val', names_to = 'type', cols = c('old', 'new')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c('hy_load', 'tn_load', 'tp_load', 'tss_load', 'bod_load'),
+                 labels = c('Hydro', 'TN', 'TP', 'TSS', 'BOD')
+    ), 
+    source = gsub('^DPS\\s\\-\\s', '', source)
+  )
 
 p1 <- ggplot(toplo, aes(x = dt, y = val, color = type)) +
   geom_line() +
@@ -33,10 +40,10 @@ p1 <- ggplot(toplo, aes(x = dt, y = val, color = type)) +
     x = NULL, 
     y = 'Load', 
     color = NULL,
-    title = 'Howard F. Curren AWTP (City of Tampa)',
+    title = 'Howard F. Curren AWTP (City of Tampa) - Monthly',
   )
 
-# png('~/Desktop/HFC_updatemo.png', width = 8, height = 4, units = 'in', res = 300)
+# png('~/Desktop/HFC_updatemo.png', width = 6, height = 9, units = 'in', res = 300)
 print(p1)
 # dev.off()
 
@@ -46,7 +53,14 @@ print(p1)
 # get old and new data combined, load as tons/yr, except hydro as 10e3 m3/yr
 toplo <- dpsdiff_fun(dpsupdate, annual = T) %>% 
   select(-diffv) %>% 
-  pivot_longer(values_to = 'val', names_to = 'type', cols = c('old', 'new'))
+  pivot_longer(values_to = 'val', names_to = 'type', cols = c('old', 'new')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c('hy_load', 'tn_load', 'tp_load', 'tss_load', 'bod_load'),
+                 labels = c('Hydro', 'TN', 'TP', 'TSS', 'BOD')
+    ), 
+    source = gsub('^DPS\\s\\-\\s', '', source)
+  )
 
 p2 <- ggplot(toplo, aes(x = year, y = val, color = type)) +
   geom_line() +
@@ -59,9 +73,9 @@ p2 <- ggplot(toplo, aes(x = year, y = val, color = type)) +
     x = NULL, 
     y = 'Load', 
     color = NULL,
-    title = 'Howard F. Curren AWTP (City of Tampa)',
+    title = 'Howard F. Curren AWTP (City of Tampa) - Annual',
   )
 
-# png('~/Desktop/HFC_updateyr.png', width = 8, height = 4, units = 'in', res = 300)
+# png('~/Desktop/HFC_updateyr.png', width = 6, height = 9, units = 'in', res = 300)
 print(p2)
 # dev.off()
