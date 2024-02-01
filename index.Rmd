@@ -153,7 +153,7 @@ Data from the __Download plot data__ button includes the following:
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons / year
 
-## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 2017 - 2021) {.tabset}
+## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 1995 - 2021) {.tabset}
 
 ```{r}
 column(12,
@@ -235,9 +235,9 @@ rct_tab(mosdat, dtvar = 'date', typ = 'tn', val = 'bod_load')
 
 ### Metadata
 
-Data from the __Download all plot data__ button includes the following: 
+Data from the __Download all plot data__ button includes monthly estimates by bay segment and source for total nitrogen, phosphorus, suspended solids, and BOD. Columns are as follows: 
 
-* __*year*__: year of the estimate
+* __*year*__: year of the estimate (1995 - 2021)
 * __*month*__: month of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
@@ -248,7 +248,7 @@ Data from the __Download all plot data__ button includes the following:
 
 Data from the __Download all entity data__ button includes the following: 
 
-* __*year*__: year of the estimate
+* __*year*__: year of the estimate (2017 - 2021)
 * __*month*__: month of the estimate
 * __*bayseg*__: bay segment where the load applies
 * __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant

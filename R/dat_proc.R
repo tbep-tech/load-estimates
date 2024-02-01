@@ -1,3 +1,5 @@
+# setup ---------------------------------------------------------------------------------------
+
 library(tidyverse)
 library(lubridate)
 library(haven)
@@ -296,9 +298,60 @@ mosdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>%
     bay_segment
   )
 
+##
+# 1995 to 2016 load by month, source, segment
+# see RP email 1/31/24
+#
+# notes from RP
+# OTB (1): no IPS for 2008-2014, no records for IPS for those years.
+# LTB (4): no IPS for 1999-7/2002, no records for IPS for those years.
+# MR (7): no IPS for 2008-2012, no records for IPS for those years.
+# BCBS (55): no IPS ever, no records for IPS.
+# For materials handling losses (PO for Ports), only HB (2) and LTB (4) have records.
+# For springs, only records are for HB (2).
+pastmosdat <- read_sas(here('data/raw/tbloadmonthsrcseg9516.sas7bdat')) %>% 
+  select(
+    year = YEAR, 
+    month = MONTH, 
+    bay_segment = bay_seg, 
+    source, 
+    tn_load = tnloadkg, 
+    tp_load = tploadkg, 
+    tss_load = tssloadkg, 
+    bod_load = bodloadkg
+  ) %>% 
+  filter(bay_segment != 5) %>% # remove boca ciega bay, there's a separate segment (55) for bcb south
+  mutate_at(vars(tn_load, tp_load, tss_load, bod_load), ~ . / 907.2) %>% # convert to tons
+  mutate(
+    bay_segment = factor(bay_segment, 
+                     levels = segidmos$bayseg,
+                     labels = segidmos$bay_segment
+                       ), 
+    bay_segment = as.character(bay_segment),
+    source = case_when(
+      source %in% c('GW', 'SPR') ~ 'GWS', 
+      source %in% c('PO') ~ 'IPS', # PO ports or material losses, grouped with IPS for original mosdat (2017-2022)
+      T ~ source
+    )
+  ) %>% 
+  summarise(
+    tn_load = sum(tn_load), 
+    tp_load = sum(tp_load), 
+    tss_load = sum(tss_load), 
+    bod_load = sum(bod_load),
+    .by = c('year', 'month', 'bay_segment', 'source')
+  ) %>% 
+  complete(year, month, bay_segment, source, fill = list(tn_load = 0, tp_load = 0, tss_load = 0, bod_load = 0))
+
+##
+# combine all for 1995 to 2021
+
+mosdat <- bind_rows(mosdat, pastmosdat) %>% 
+  arrange(year, bay_segment, month, source)
+
 # correction to mosdat from hfc update
 dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = T, varsel = c('tn_load', 'tp_load', 'tss_load', 'bod_load')) %>% 
-  filter(year > 2016 & year < 2022) %>% 
+  filter(year < 2022) %>% 
   select(-entity, -source) %>% 
   mutate(source = 'DPS')
 
