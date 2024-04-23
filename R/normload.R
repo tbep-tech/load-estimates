@@ -26,7 +26,9 @@ normdat <- totanndat |>
   pivot_longer(-c(bay_segment, alloc, year)) |> 
   mutate(
     name = factor(name, levels = c('tn_load', 'normtn_load'),
-                  labels = c('Observed', 'Normalized'))
+                  labels = c('Observed', 'Normalized')), 
+    bay_segment = factor(bay_segment, levels = c('Old Tampa Bay', 'Hillsborough Bay', 
+      'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay'))
   )
 
 ggplot(normdat, aes(x = year, y = value, color = name)) + 
