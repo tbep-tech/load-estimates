@@ -42,7 +42,7 @@ data(tnanndat)
 ##
 # historic estimates
 labs <- c('Atmospheric Deposition', 'Fertilizer Losses', 'Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
-cols <- c('#33CC33', '#00B0F0', 'darkred', '#FFFF99', '#EB641B')
+cols <- c('#727272', '#3d7993', '#17506f', '#1f806e', '#4e7f0d')
 names(cols) <- labs
 yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s')
 
@@ -67,7 +67,7 @@ historic <- tibble(
 
 srcs <- c('AD', 'DPS', 'IPS', 'NPS', 'GWS')
 labs <- c('Atmospheric Deposition', 'Domestic Point Sources', 'Industrial Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
-cols <- c('#33CC33', '#E6B9B8', '#C0504D', '#FFFF99', '#EB641B')
+cols <- c('#727272', '#826992', '#657389', '#1f806e', '#4e7f0d')
 
 # load in tons, convert to kg
 toplo <- tnanndat %>% 
@@ -122,11 +122,12 @@ for(i in c('1970s', '2010s')){
              explode = 0.1,
              height = 0.06,
              shade = 0.8)
-  pie3D.labels(p, labels = tmp$lab, theta = 0.9, labelrad = rad + 0.25, labelcex = 1)
-  title(ttl, line = -1)
+  pie3D.labels(p, labels = tmp$lab, theta = 0.9, labelrad = rad + 0.25, labelcex = 1.2)
+  title(ttl, line = -1.4, cex.main = 1.5)
   
   ord <- matrix(1:6, nrow = 2, ncol = 3, byrow = T)
-  legend(x = -1.65, y = -0.65, ncol = 3, legend = na.omit(rev(src)[ord]), xpd = NA, fill = na.omit(rev(cols)[ord]), box.col = NA)
+  legend(x = -1.65, y = -0.63, ncol = 3, legend = na.omit(rev(src)[ord]), xpd = NA, col = na.omit(rev(cols)[ord]), box.col = NA, pch = 15, pt.cex = 3.6, y.intersp = 1.5, 
+         bg = 'transparent')
   
 }
 
