@@ -108,25 +108,27 @@ par(mfrow = c(2, 1), mar = c(1, 0, 1, 0), xpd = NA)
 for(i in c('1970s', '2010s')){
   
   tmp <- toplo %>%
-    filter(yearcat == i)
+    filter(yearcat == i) %>% 
+    arrange(-per)
   
   rad <- unique(tmp$rad)
   ttl <- unique(tmp$ttl)
   cols <- tmp$cols
   src <- tmp$source
   
-  p <- pie3D(tmp$tot, mar = c(0, 6, 0, 6),
+  p <- pie3D(tmp$tot, mar = c(5, 0, 5, 0),
              col = cols,
-             radius = rad,
-             theta = 0.9,
-             explode = 0.1,
-             height = 0.06,
-             shade = 0.8)
-  pie3D.labels(p, labels = tmp$lab, theta = 0.9, labelrad = rad + 0.25, labelcex = 1.2)
+             radius = rad * 0.5,
+             theta = 2.5,
+             explode = 0.05,
+             height = 0.1,
+             shade = 0.8, 
+             pty = 'm')
+  pie3D.labels(p, labels = tmp$lab, theta = 2.5, labelrad = (rad * 0.5) + 0.15, labelcex = 1.2)
   title(ttl, line = -1.4, cex.main = 1.5)
   
   ord <- matrix(1:6, nrow = 2, ncol = 3, byrow = T)
-  legend(x = -1.65, y = -0.63, ncol = 3, legend = na.omit(rev(src)[ord]), xpd = NA, col = na.omit(rev(cols)[ord]), box.col = NA, pch = 15, pt.cex = 3.6, y.intersp = 1.5, 
+  legend(x = -0.8, y = -1.35, ncol = 3, legend = na.omit(rev(src)[ord]), xpd = NA, col = na.omit(rev(cols)[ord]), box.col = NA, pch = 15, pt.cex = 3.6, y.intersp = 2.5, 
          bg = 'transparent')
   
 }
