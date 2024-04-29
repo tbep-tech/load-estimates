@@ -3,7 +3,7 @@ library(colorspace)
 library(plotrix)
 library(here)
 library(showtext)
-library(patchwork)
+# library(patchwork)
 
 # get font
 font_add_google("Roboto", "roboto")#, regular = 'C:/Windows/Fonts/Roboto.ttf')
