@@ -565,6 +565,7 @@ save(mohydat, file = here('data/mohydat.RData'))
 load(file = here('data/dpsupdate.RData'))
 
 # non-point source prior to 2017-2021 RA
+# T:\09_TECHNICAL_PROJECTS\TECHNICAL_SUPPORT\00_CONTRACTS\02_FUNDING_OUT\ESA-Janicki\04_DELIVERABLES\TO5
 npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
   left_join(clucs_lkup, by = 'CLUCSID') %>% 
@@ -574,6 +575,7 @@ npsmosdat <- read_sas(here('data/raw/nps0420monthentbaslu.sas7bdat')) %>%
   select(year, month, bay_segment, entity, lu = DESCRIPTION, source, tn_load = tnloadtons) %>% filter(year < 2017)
 
 # industrial point source prior to 2017-2021 RA
+# T:\09_TECHNICAL_PROJECTS\TECHNICAL_SUPPORT\00_CONTRACTS\02_FUNDING_OUT\ESA-Janicki\04_DELIVERABLES\TO5
 ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>% 
   mutate(
@@ -582,6 +584,7 @@ ipsmosdat <- read_sas(here('data/raw/ips0420monthentbas.sas7bdat')) %>%
   select(year = Year, month = Month, bay_segment, facility = facname, source, tn_load = tnloadtons) %>% filter(year < 2017)
 
 # domestic point source prior to 2017-2021 RA 
+# T:\09_TECHNICAL_PROJECTS\TECHNICAL_SUPPORT\00_CONTRACTS\02_FUNDING_OUT\ESA-Janicki\04_DELIVERABLES\TO5
 dpsmosdat <- read_sas(here('data/raw/dps0420monthentbas.sas7bdat')) %>% 
   inner_join(segidmos, by = 'bayseg') %>%
   mutate(
