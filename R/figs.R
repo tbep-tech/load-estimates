@@ -303,7 +303,7 @@ data(tnanndat)
 labs <- c('Atmospheric Deposition', 'Fertilizer Losses', 'Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
 cols <- c('#727272', '#3d7993', '#17506f', '#1f806e', '#4e7f0d')
 names(cols) <- labs
-yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s')
+yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s', '2020')
 
 # from TBEP #04-94
 # totals are kg/yr, conveted to tons/yr
@@ -333,7 +333,7 @@ toplo <- tnanndat %>%
   filter(bay_segment %in% 'All Segments (- N. BCB)') %>% 
   mutate(
     yearcat = cut(year, 
-                  breaks = c(-Inf, 1970, 1990, 2000, 2010, Inf), 
+                  breaks = c(-Inf, 1970, 1990, 2000, 2010, 2020, Inf), 
                   labels = yrlabs, 
                   right = F) ,
     source = gsub('^IPS$|^DPS$', 'PS', source),
@@ -398,7 +398,7 @@ pie3D.labels(p, labels = tmp$lab, theta = 2.5, labelrad = (rad1) + 0.15, labelce
 title(ttl, line = -1.4, cex.main = 1.5)
 
 tmp <- toplo %>%
-  filter(yearcat == '2010s') %>% 
+  filter(yearcat == '2020') %>% 
   arrange(-per)
 
 prp <- unique(tmp$prp)
