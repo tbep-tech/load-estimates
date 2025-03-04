@@ -600,8 +600,8 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F, varsel = NULL){
         source = 'DPS'
       ) %>% 
       summarise(
-        old = sum(old), 
-        new = sum(new), 
+        old = sum(old, na.rm = T), 
+        new = sum(new, na.rm = T), 
         .by = c(year, month, entity, source, bay_segment, var)
       )
     
@@ -609,8 +609,8 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F, varsel = NULL){
   if(annual)
     cmbdat <- cmbdat %>% 
       summarize(
-        old = sum(old), 
-        new = sum(new),
+        old = sum(old, na.rm = T), 
+        new = sum(new, na.rm = T),
         .by = c(year, entity, source, bay_segment, var)
       )
   

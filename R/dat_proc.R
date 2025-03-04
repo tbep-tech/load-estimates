@@ -81,7 +81,7 @@ dat <- dat %>%
 tots <- dat %>% 
   group_by(year, source) %>% 
   summarise(
-    tn_load = sum(tn_load),
+    tn_load = sum(tn_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
@@ -116,7 +116,7 @@ loadra1721 <- read.csv(here('data/raw/totn1721_segsource.csv')) %>%
   ) %>% 
   group_by(year, bay_segment, source) %>% 
   summarise(
-    tn_load = sum(tn_load), 
+    tn_load = sum(tn_load, na.rm = T), 
     .groups = 'drop'
   )
 
@@ -136,7 +136,7 @@ loadra1721 <- loadra1721 %>%
 loadra1721tots <- loadra1721 %>% 
   group_by(year, source) %>% 
   summarise(
-    tn_load = sum(tn_load),
+    tn_load = sum(tn_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
@@ -280,10 +280,10 @@ mosdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>%
   ) %>% 
   group_by(bayseg, year, month, source) %>% 
   summarise(
-    tnload = sum(tnloadtons), 
-    tpload = sum(tploadtons), 
-    tssload = sum(tssloadtons), 
-    bodload = sum(bodloadtons),
+    tnload = sum(tnloadtons, na.rm = T), 
+    tpload = sum(tploadtons, na.rm = T), 
+    tssload = sum(tssloadtons, na.rm = T), 
+    bodload = sum(bodloadtons, na.rm = T),
     .groups = 'drop'
   ) %>% 
   left_join(segidmos, by = 'bayseg') %>% 
@@ -335,10 +335,10 @@ pastmosdat <- read_sas(here('data/raw/tbloadmonthsrcseg9516.sas7bdat')) %>%
     )
   ) %>% 
   summarise(
-    tn_load = sum(tn_load), 
-    tp_load = sum(tp_load), 
-    tss_load = sum(tss_load), 
-    bod_load = sum(bod_load),
+    tn_load = sum(tn_load, na.rm = T), 
+    tp_load = sum(tp_load, na.rm = T), 
+    tss_load = sum(tss_load, na.rm = T), 
+    bod_load = sum(bod_load, na.rm = T),
     .by = c('year', 'month', 'bay_segment', 'source')
   ) %>% 
   complete(year, month, bay_segment, source, fill = list(tn_load = 0, tp_load = 0, tss_load = 0, bod_load = 0))
@@ -369,10 +369,10 @@ mosdat <- mosdat %>%
 totsmo <- mosdat %>% 
   group_by(year, month, source) %>% 
   summarise(
-    tn_load = sum(tn_load),
-    tp_load = sum(tp_load), 
-    tss_load = sum(tss_load), 
-    bod_load = sum(bod_load),
+    tn_load = sum(tn_load, na.rm = T),
+    tp_load = sum(tp_load, na.rm = T), 
+    tss_load = sum(tss_load, na.rm = T), 
+    bod_load = sum(bod_load, na.rm = T),
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
@@ -401,10 +401,10 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
   ) %>% 
   group_by(entity, year, month, source, bayseg) %>% 
   summarise(
-    tnload = sum(tnloadtons), 
-    tpload = sum(tploadtons), 
-    tssload = sum(tssloadtons), 
-    bodload = sum(bodloadtons),
+    tnload = sum(tnloadtons, na.rm = T), 
+    tpload = sum(tploadtons, na.rm = T), 
+    tssload = sum(tssloadtons, na.rm = T), 
+    bodload = sum(bodloadtons, na.rm = T),
     .groups = 'drop'
   ) %>% 
   select(year, month, bayseg, entity, source, tn_load = tnload)
@@ -415,10 +415,13 @@ mosentdat <- read_sas(here('data/raw/monthly1721entityloaddataset.sas7bdat')) %>
 newdat <- dpsupdate %>% 
   filter(Year > 2016 & Year < 2022) %>% 
   summarise(
-    tn_load = sum(tn_load), 
-    .by = c('Year', 'Month', 'entity', 'bayseg')
+    tn_load = sum(tn_load, na.rm = T), 
+    .by = c('Year', 'Month', 'entity', 'bay_segment')
   ) %>%
-  mutate(source = 'DPS') %>% 
+  mutate(
+    source = 'DPS', 
+    bayseg = 2
+  ) %>% 
   select(year = Year, month = Month, bayseg, entity, source, tn_load)
 
 # swap out old hfc/city of tampa with new
@@ -494,7 +497,7 @@ mohydat <- mohydat %>%
 allmohydat <- mohydat %>% 
   group_by(year, month) %>% 
   summarise(
-    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)') %>% 
@@ -526,7 +529,7 @@ oldmohydat <- read_excel(here('data/raw/Tampa Bay Loadings 1985-2016.xlsx'), she
     )
   ) %>% 
   summarise(
-    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
     .by = c(year, month, bay_segment)
   )
 
@@ -545,7 +548,7 @@ oldmohydat <- oldmohydat %>%
 
 alloldmohydat <- oldmohydat %>% 
   summarise(
-    hy_load_106_m3_mo = sum(hy_load_106_m3_mo), 
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
     .by = c(year, month)
   ) %>% 
   mutate(
@@ -653,14 +656,14 @@ npsdpsips <- list(npsmosdat, ipsmosdat, dpsmosdat) %>%
   unnest('value') %>% 
   group_by(year, month, bay_segment, source) %>% 
   summarise(
-    tn_load = sum(tn_load), 
+    tn_load = sum(tn_load, na.rm = T), 
     .groups = 'drop'
   ) 
 
 npsdpsipsall <- npsdpsips %>% 
   group_by(year, month, source) %>% 
   summarise(
-    tn_load = sum(tn_load), 
+    tn_load = sum(tn_load, na.rm = T), 
     .groups = 'drop'
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
@@ -747,6 +750,7 @@ dpsmosdat <- bind_rows(dpsmosdat1, dpsmosdat2) %>%
 # calculate dps load data from raw
 newdat <- dpsupdate %>% 
   filter(Year < 2022) %>% 
+  mutate(bayseg = 2) %>% 
   select(entity, source, year = Year, month = Month, bayseg, tn_load) %>% 
   arrange(source)
 
