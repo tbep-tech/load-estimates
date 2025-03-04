@@ -297,32 +297,32 @@ Data from the __Download all plot data__ button includes the following:
 * __*bay_segment*__: the bay segment for the month estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*hy_load_106_m3_mo*__: hydrologic load as 10$^6$ m$^3$/month
 
-## Total nitrogen select sources (monthly, 2004 - 2021) {.tabset}
+## Non-point source by land use (monthly, 2004 - 2021) {.tabset}
 
 ```{r}
-column(12, 
-  column(3, 
-    npsdpsips %>%
-      download_this(
-        output_name = "TN-select-sources-monthly",
-        output_extension = ".xlsx",
-        button_label = "Download plot data",
-        button_type = "info",
-        has_icon = TRUE,
-        icon = "fa fa-save"
-      )
-  ),
-  column(3,
-    npsdpsipsent %>%
-      download_this(
-        output_name = "TN-entity-monthly",
-        output_extension = ".xlsx",
-        button_label = "Download entity data",
-        button_type = "info",
-        has_icon = TRUE,
-        icon = "fa fa-save"
-      )
-  ),
+column(12,
+#   column(3, 
+#     npsdpsips %>%
+#       download_this(
+#         output_name = "TN-select-sources-monthly",
+#         output_extension = ".xlsx",
+#         button_label = "Download plot data",
+#         button_type = "info",
+#         has_icon = TRUE,
+#         icon = "fa fa-save"
+#       )
+#   ),
+#   column(3,
+#     npsdpsipsent %>%
+#       download_this(
+#         output_name = "TN-entity-monthly",
+#         output_extension = ".xlsx",
+#         button_label = "Download entity data",
+#         button_type = "info",
+#         has_icon = TRUE,
+#         icon = "fa fa-save"
+#       )
+#   ),
   column(3,
     npsmosludat %>%
       download_this(
@@ -340,19 +340,19 @@ column(12,
 <br></br>
 <br></br>
 
-### By source
+<!-- ### By source -->
 
-```{r, out.width = '100%', out.height='1000px'}
-tnsrc_plo(npsdpsips, xval = 'date', src = 'select')
-```
+<!-- ```{r, out.width = '100%', out.height='1000px'} -->
+<!-- tnsrc_plo(npsdpsips, xval = 'date', src = 'select') -->
+<!-- ``` -->
 
-### Table
+<!-- ### Table -->
 
-```{r}
-rct_tab(npsdpsips, dtvar = 'date', typ = 'tn')
-```
+<!-- ```{r} -->
+<!-- rct_tab(npsdpsips, dtvar = 'date', typ = 'tn') -->
+<!-- ``` -->
 
-### NPS by land use
+### Non-point source by land use
 
 ```{r, out.width = '100%', out.height = '250px'}
 dat <- npsmosdat %>% 
@@ -414,22 +414,22 @@ window.onload = filter_default;
 
 ### Metadata
 
-Data from the __Download plot data__ button includes the following: 
+<!-- Data from the __Download plot data__ button includes the following:  -->
 
-* __*year*__: year of the estimate
-* __*month*__: month of the estimate
-* __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
-* __*source*__: total nitrogen source as domestic point source reuse (DPS - reuse), domestic point source end of pipe (DPS - end of pipe), industrial point source (IPS), and non-point source (NPS)
-* __*tn_load*__: total nitrogen load in tons / month
+<!-- * __*year*__: year of the estimate -->
+<!-- * __*month*__: month of the estimate -->
+<!-- * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North) -->
+<!-- * __*source*__: total nitrogen source as domestic point source reuse (DPS - reuse), domestic point source end of pipe (DPS - end of pipe), industrial point source (IPS), and non-point source (NPS) -->
+<!-- * __*tn_load*__: total nitrogen load in tons / month -->
 
-Data from the __Download entity data__ button includes the following: 
+<!-- Data from the __Download entity data__ button includes the following:  -->
 
-* __*year*__: year of the estimate
-* __*month*__: month of the estimate
-* __*bayseg*__: bay segment where the load applies
-* __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant
-* __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS)
-* __*tn_load*__: total nitrogen load in tons / month
+<!-- * __*year*__: year of the estimate -->
+<!-- * __*month*__: month of the estimate -->
+<!-- * __*bayseg*__: bay segment where the load applies -->
+<!-- * __*entity*__: entity responsible for the load, e.g., a specific wastewater treatment plant -->
+<!-- * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS), industrial point source (IPS), and non-point source (NPS) -->
+<!-- * __*tn_load*__: total nitrogen load in tons / month -->
 
 Data from the __Download NPS by land use__ button includes the following: 
 
