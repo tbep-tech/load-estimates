@@ -238,7 +238,28 @@ totanndatpos <- totanndatpos %>%
     tphy = tp_load / hy_load
   )  
 
-totanndat <- bind_rows(totanndatpre, totanndatpos)
+# original here T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
+totanndat2224 <- read.csv(here('data/raw/TOTLoadsRASeg2224.csv')) |> 
+  select(
+    year = YEAR,
+    bay_segment = BAY_SEG,
+    tn_load = TN_TONS, 
+    tp_load = TP_TONS,
+    hy_load = h2oload10e6m3,
+  ) |> 
+  mutate(
+    bay_segment = case_when(
+      bay_segment == 1 ~ 'Old Tampa Bay', 
+      bay_segment == 2 ~ 'Hillsborough Bay', 
+      bay_segment == 3 ~ 'Middle Tampa Bay', 
+      bay_segment == 4 ~ 'Lower Tampa Bay', 
+      bay_segment == 5567 ~ 'Remainder Lower Tampa Bay'
+    ),
+    tnhy = tn_load / hy_load,
+    tphy = tp_load / hy_load
+  )
+
+totanndat <- bind_rows(totanndatpre, totanndatpos, totanndat2224)
 
 # totals sum by segments
 allseg <- totanndat %>% 
@@ -555,7 +576,39 @@ alloldmohydat <- oldmohydat %>%
     bay_segment = 'All Segments (- N. BCB)'
   )
 
-mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat) %>% 
+# original here T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
+mohydat2224 <- read.csv(here('data/raw/segmonthlyh2o_2224_allsources_allsegs.csv')) |> 
+  select(
+    year = YEAR, 
+    month = MONTH, 
+    bay_segment = bayseg, 
+    hy_load_106_m3_mo = h2oload10e6m3
+  ) |> 
+  filter(bay_segment != 5) |> 
+  mutate(
+    bay_segment = case_when(
+      bay_segment == 1 ~ 'Old Tampa Bay', 
+      bay_segment == 2 ~ 'Hillsborough Bay', 
+      bay_segment == 3 ~ 'Middle Tampa Bay', 
+      bay_segment == 4 ~ 'Lower Tampa Bay', 
+      bay_segment %in% c(6, 7, 55) ~ 'Remainder Lower Tampa Bay'
+    )
+  ) |> 
+  summarise(
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
+    .by = c(year, month, bay_segment)
+  )
+
+allmohydat2224 <- mohydat2224 %>% 
+  summarise(
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
+    .by = c(year, month)
+  ) %>% 
+  mutate(
+    bay_segment = 'All Segments (- N. BCB)'
+  )
+
+mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat, mohydat2224, allmohydat2224) %>% 
   arrange(bay_segment, year, month)
 
 save(mohydat, file = here('data/mohydat.RData'))
