@@ -141,7 +141,41 @@ loadra1721tots <- loadra1721 %>%
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots) %>%
+# 2022 - 2024
+# original at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total\SrcSegAnnLoad2224.csv
+loadra2224 <- read.csv(here('data/raw/SrcSegAnnLoad2224.csv')) |> 
+  select(
+    bay_segment = BAY_SEG, 
+    year = YEAR, 
+    source, 
+    tn_load = TN_TONS
+    ) %>% 
+  na.omit() %>% 
+  filter(!bay_segment %in% 5) %>%
+  mutate(
+    source = as.character(factor(source, 
+                    levels = c('AD', 'DPS', 'GW', 'IPS', 'ML', 'NPS', 'SPR'),
+                    labels = c('AD', 'DPS', 'GWS', 'IPS', 'IPS', 'NPS', 'GWS')
+    )),
+    bay_segment = as.character(factor(bay_segment, 
+                         levels = as.character(c(1, 2, 3, 4, 55, 6, 7)), 
+                         labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
+  ) %>% 
+  group_by(year, bay_segment, source) %>% 
+  summarise(
+    tn_load = sum(tn_load, na.rm = T), 
+    .groups = 'drop'
+  )
+
+loadra2224tots <- loadra2224 |> 
+  group_by(year, source) %>% 
+  summarise(
+    tn_load = sum(tn_load, na.rm = T),
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)')
+
+tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots, loadra2224, loadra2224tots) %>%
   tidyr::complete(bay_segment, source, year, fill = list(tn_load = 0)) %>% 
   arrange(year, bay_segment, source)
 

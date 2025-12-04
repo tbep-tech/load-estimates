@@ -109,7 +109,7 @@ Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrolog
 
 <img src="figs/segmap.png" alt="Major bay segments in Tampa Bay used to assign load estimates. The Remainder of Lower Tampa Bay includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtesy of Janicki Environmental, Inc." width="40%" />
 
-## Total nitrogen (annual, 1985 - 2021) {.tabset}
+## Total nitrogen (annual, 1985 - 2024) {.tabset}
 
 ```{r}
 column(12, 
