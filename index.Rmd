@@ -25,7 +25,6 @@ library(showtext)
 
 data(tnanndat)
 data(mosdat)
-data(mosentdat)
 data(totanndat)
 data(npsmosdat)
 data(npsmosludat)
