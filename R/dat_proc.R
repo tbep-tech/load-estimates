@@ -762,7 +762,17 @@ dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>%
   ) %>% 
   select(year = Year, month = Month, bay_segment, entity, facility = facname, source, tn_load = tnloadtons) 
 
-npsmosdat <- bind_rows(npsmosdat, npsmosdat2)
+# nps by mo, lu 2022 - 2024
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224NPSMonthlyEntityLUBasin\NPS2224MonthEnBasLU.csv
+npsmosdat2224 <- read.csv(here('data/raw/NPS2224MonthEnBasLU.csv')) %>% 
+  inner_join(segidmos, by = 'bayseg') %>% 
+  left_join(clucs_lkup, by = 'CLUCSID') %>% 
+  mutate(
+    source = 'NPS'
+  ) %>% 
+  select(year, month, bay_segment, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
+
+npsmosdat <- bind_rows(npsmosdat, npsmosdat2, npsmosdat2224)
 ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2)
 dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2)
 
@@ -933,6 +943,20 @@ npsmosludat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>%
   ) %>% 
   select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
 
-npsmosludat <- bind_rows(npsmosludat, npsmosludat2)
+# nps by mo, lu 2022 - 2024
+# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224NPSMonthlyEntityLUBasin\NPS2224MonthEnBasLU.csv
+npsmosludat2224 <- read.csv(here('data/raw/NPS2224MonthEnBasLU.csv')) |> 
+  inner_join(segidmos, by = 'bayseg') |> 
+  left_join(clucs_lkup, by = 'CLUCSID') |>
+  summarise(
+    tn_load = sum(tnloadtons, na.rm = T), 
+    .by = c('DESCRIPTION', 'bay_segment', 'year', 'month')
+  ) |> 
+  mutate(
+    source = 'NPS'
+  ) |> 
+  select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
+
+npsmosludat <- bind_rows(npsmosludat, npsmosludat2, npsmosludat2224)
 
 save(npsmosludat, file = here('data/npsmosludat.RData'), version = 2)
