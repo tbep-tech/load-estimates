@@ -432,7 +432,53 @@ totsmo <- mosdat %>%
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-mosdat <- bind_rows(mosdat, totsmo) %>% 
+# 2022 - 2024 loading by month/source
+# original at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
+# received via email request to RP 12/4/24
+mosdat2224 <- read.csv(here('data/raw/monthly2224entityloaddataset.csv')) |> 
+  select(bayseg, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) |> 
+  mutate(
+    source = case_when(
+      source == 'Atmospheric Deposition' ~ 'AD', 
+      source %in% c('Springs', 'Ground Water') ~ 'GWS', 
+      source %in% c('PS - Domestic - REUSE', 'PS - Domestic - SW') ~ 'DPS', 
+      source %in% c('PS - Industrial', 'Material Losses') ~ 'IPS', 
+      source == 'Non-Point Source' ~ 'NPS'
+    )
+  ) |> 
+  group_by(bayseg, year, month, source) |> 
+  summarise(
+    tnload = sum(tnloadtons, na.rm = T), 
+    tpload = sum(tploadtons, na.rm = T), 
+    tssload = sum(tssloadtons, na.rm = T), 
+    bodload = sum(bodloadtons, na.rm = T),
+    .groups = 'drop'
+  ) |> 
+  left_join(segidmos, by = 'bayseg') |> 
+  select(
+    source, 
+    year, 
+    month, 
+    tn_load = tnload, 
+    tp_load = tpload,
+    tss_load = tssload, 
+    bod_load = bodload,
+    bay_segment
+  )
+
+totsmo2224 <- mosdat2224 %>% 
+  group_by(year, month, source) %>% 
+  summarise(
+    tn_load = sum(tn_load, na.rm = T),
+    tp_load = sum(tp_load, na.rm = T), 
+    tss_load = sum(tss_load, na.rm = T), 
+    bod_load = sum(bod_load, na.rm = T),
+    .groups = 'drop'
+  ) %>% 
+  mutate(bay_segment = 'All Segments (- N. BCB)')
+
+mosdat <- bind_rows(mosdat, totsmo, mosdat2224, totsmo2224) %>% 
+  arrange(year, bay_segment, month, source) %>%
   select(year, month, bay_segment, source, tn_load, tp_load, tss_load, bod_load)
 
 save(mosdat, file = here('data/mosdat.RData'), version = 2)
