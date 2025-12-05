@@ -374,7 +374,7 @@ column(12,
   column(3,
     totanndat %>%
       download_this(
-        output_name = "hydro-annual",
+        output_name = "total-annual",
         output_extension = ".xlsx",
         button_label = "Download plot data",
         button_type = "info",
