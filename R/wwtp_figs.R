@@ -1,6 +1,8 @@
 library(tidyverse)
 library(ggridges)
 library(here)
+library(sf)
+library(mapview)
 
 data(dpsmosdat)
 
@@ -75,3 +77,6 @@ dev.off()
 png(here('figs/wwtpnohfc.png'), width = 6, height = 8, units = 'in', res = 300)
 print(p2)
 dev.off()
+
+locs <- st_read(here('data/raw/domptsrc.shp')) |> 
+  filter(tolower(NAME) %in% unique(tolower(toplo$facility)))
