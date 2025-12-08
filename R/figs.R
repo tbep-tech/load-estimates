@@ -303,7 +303,7 @@ data(tnanndat)
 labs <- c('Atmospheric Deposition', 'Fertilizer Losses', 'Point Sources', 'Nonpoint Sources', 'Groundwater & Springs')
 cols <- c('#727272', '#3d7993', '#17506f', '#1f806e', '#4e7f0d')
 names(cols) <- labs
-yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s', '2020')
+yrlabs <- c('1970s', '1985-1989', '1990s', '2000s', '2010s', '2020s')
 
 # from TBEP #04-94
 # totals are kg/yr, conveted to tons/yr
@@ -398,7 +398,7 @@ pie3D.labels(p, labels = tmp$lab, theta = 2.5, labelrad = (rad1) + 0.15, labelce
 title(ttl, line = -1.4, cex.main = 1.5)
 
 tmp <- toplo %>%
-  filter(yearcat == '2020') %>% 
+  filter(yearcat == '2020s') %>% 
   arrange(-per)
 
 prp <- unique(tmp$prp)
