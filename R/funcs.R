@@ -622,18 +622,150 @@ dpsdiff_fun <- function(dpsupdate, annual = F, total = F, varsel = NULL){
   
   # subset variables, return only diff in wide format
   if(!is.null(varsel)){
-    
+
     if(any(!varsel %in% c('tn_load', 'tp_load', 'tss_load', 'bod_load', 'hy_load')))
       stop('varsel must be one to many of tn_load, tp_load, tss_load, bod_load, hy_load')
-   
-    out <- out %>% 
-      filter(var %in% varsel) %>% 
-      select(-new, -old) %>% 
-      mutate(var = paste0(var, '_diffv')) %>% 
+
+    out <- out %>%
+      filter(var %in% varsel) %>%
+      select(-new, -old) %>%
+      mutate(var = paste0(var, '_diffv')) %>%
       pivot_wider(names_from = 'var', values_from = 'diffv')
-    
+
   }
-  
+
   return(out)
-  
-}      
+
+}
+
+# recode a tbeploads `source` value to the canonical 5-level load-estimates scheme
+# (AD/DPS/GWS/IPS/NPS) expected by tnsrc_plo/ldtot_plo/hy_plo -- any other source
+# label is silently dropped by those plotting functions, so every tbeploads-derived
+# object must be recoded through this before being combined into tnanndat/mosdat/
+# totanndat/mohydat
+recode_src5 <- function(source){
+  dplyr::case_when(
+    source == 'AD' ~ 'AD',
+    grepl('^DPS', source) ~ 'DPS',
+    source %in% c('GW', 'SPR') ~ 'GWS',
+    source %in% c('IPS', 'ML') ~ 'IPS',
+    source == 'NPS' ~ 'NPS'
+  )
+}
+
+# disaggregate monthly basin-level NPS TN (tbeploads::anlz_nps(summ = 'basin', summtime =
+# 'month')) to individual MS4/NPS entities for use in mosentdat.
+#
+# tbeploads has no function that produces monthly, entity-resolved NPS loads directly:
+# anlz_nps has no entity grouping option, and anlz_aa (the only NPS -> entity allocator)
+# is annual-only. This is a modeled approximation, not a re-derivation of a real
+# monthly-entity process (none exists to reproduce): each entity's FIXED (time-invariant,
+# since it depends only on static land-use/soils data), land-use-weighted fractional
+# share of a basin's NPS TN load (from util_aa_npsfactors) is applied to that basin's
+# monthly TN totals, then the result is rescaled so each entity/bay_seg/year sums exactly
+# to the trusted annual total from anlz_aa(annavg = FALSE).
+#
+# npsfactors: list output of tbeploads::util_aa_npsfactors(tbbase, rcclucsid, emc)
+# nps_mo_basin: tbeploads::anlz_nps(..., summ = 'basin', summtime = 'month')
+# aa_yr: tbeploads::anlz_aa(..., annavg = FALSE)
+#
+# returns: year, month, bayseg (numeric segidmos code), entity, source = 'NPS', tn_load
+nps_entmo_fun <- function(npsfactors, nps_mo_basin, aa_yr){
+
+  # entity's fixed fractional share of each bay_seg x basin's NPS TN load, replicating
+  # anlz_aa's own entity relabeling exactly so results are consistent with its entity
+  # categories (Agriculture -> "All"; generic MS4 permits and Port Manatee in MTB/LTB ->
+  # "Non-MS4/Ag NPS"); bay_seg 6/7 remapped to 55 to match anlz_aa's post-disaggregation
+  # segment merge
+  entity_basin_share <- npsfactors$tn %>%
+    dplyr::inner_join(npsfactors$rc, by = c('bay_seg', 'basin', 'clucsid')) %>%
+    dplyr::mutate(
+      entity = dplyr::case_when(
+        !is.na(category) & category == 'Agriculture' ~ 'All',
+        entity %in% c('MSGP COT', 'MSGP PINELLAS') ~ 'Non-MS4/Ag NPS',
+        bay_seg %in% c(3L, 4L) & entity == 'PORT MANATEE' ~ 'Non-MS4/Ag NPS',
+        TRUE ~ entity
+      ),
+      factor_prod = factor_tn * factor_rc,
+      bay_seg = dplyr::if_else(bay_seg %in% c(6L, 7L), 55L, bay_seg)
+    ) %>%
+    dplyr::group_by(bay_seg, basin, entity) %>%
+    dplyr::summarise(factor_prod = sum(factor_prod, na.rm = TRUE), .groups = 'drop')
+
+  # segment name -> bay_seg, matching anlz_aa's internal mapping
+  seg_bay <- c(
+    'Old Tampa Bay' = 1L, 'Hillsborough Bay' = 2L, 'Middle Tampa Bay' = 3L,
+    'Lower Tampa Bay' = 4L, 'Terra Ceia Bay' = 6L, 'Manatee River' = 7L,
+    'Boca Ciega Bay South' = 55L
+  )
+
+  entity_month_raw <- nps_mo_basin %>%
+    dplyr::filter(source == 'NPS') %>%
+    dplyr::mutate(
+      bay_seg = seg_bay[segment],
+      bay_seg = dplyr::if_else(bay_seg %in% c(6L, 7L), 55L, bay_seg)
+    ) %>%
+    dplyr::filter(!is.na(bay_seg)) %>%
+    dplyr::inner_join(entity_basin_share, by = c('bay_seg', 'basin'), relationship = 'many-to-many') %>%
+    dplyr::mutate(tn_load_wt = tn_load * factor_prod) %>%
+    dplyr::group_by(bay_seg, entity, Year, Month) %>%
+    dplyr::summarise(tn_load = sum(tn_load_wt, na.rm = TRUE), .groups = 'drop')
+
+  entity_year_raw <- entity_month_raw %>%
+    dplyr::group_by(bay_seg, entity, year = Year) %>%
+    dplyr::summarise(tn_load_raw = sum(tn_load, na.rm = TRUE), .groups = 'drop')
+
+  # identify NPS-path rows by exclusion rather than by source label: anlz_aa's NPS path
+  # sets source to the entity's matched allocation type ("MS4" for tracked jurisdictions,
+  # "Nonpoint Source/MS4" for individually-tracked MS4 subdivision permits) but leaves it
+  # NA for synthetic aggregate categories with no direct allocations-table match ("All"
+  # = Agriculture, "Non-MS4/Ag NPS" = generic MSGP permits/Port Manatee) -- all of these
+  # are real NPS entities that belong here, whereas IPS/DPS/ML rows always carry one of
+  # exactly those four labels, so excluding them is a robust way to select the full NPS set
+  entity_year_true <- aa_yr %>%
+    dplyr::filter(!source %in% c('DPS - end of pipe', 'DPS - reuse', 'IPS', 'ML')) %>%
+    dplyr::select(bay_seg, entity, year, load_tons)
+
+  # scale factor per entity/bay_seg/year, with explicit divide-by-zero handling: if the
+  # land-use-weighted disaggregation produces exactly zero for an entity/year that
+  # nonetheless has a real annual total (e.g. a newly-added entity with no matching
+  # CLUCSID-weighted footprint that year), spread the true annual total evenly across
+  # the 12 months rather than dropping the entity or leaving it NA -- flagged via
+  # `evenspread` so these rows are identifiable downstream
+  scale_df <- entity_year_true %>%
+    dplyr::full_join(entity_year_raw, by = c('bay_seg', 'entity', 'year')) %>%
+    dplyr::mutate(
+      load_tons = dplyr::coalesce(load_tons, 0),
+      tn_load_raw = dplyr::coalesce(tn_load_raw, 0),
+      evenspread = load_tons > 0 & tn_load_raw == 0,
+      scale = dplyr::case_when(
+        tn_load_raw > 0 ~ load_tons / tn_load_raw,
+        TRUE ~ 1
+      )
+    )
+
+  scaled <- entity_month_raw %>%
+    dplyr::inner_join(scale_df %>% dplyr::filter(!evenspread), by = c('bay_seg', 'entity', 'Year' = 'year')) %>%
+    dplyr::mutate(tn_load = tn_load * scale) %>%
+    dplyr::select(bay_seg, entity, Year, Month, tn_load)
+
+  evenspread_rows <- scale_df %>%
+    dplyr::filter(evenspread) %>%
+    dplyr::select(bay_seg, entity, year, load_tons) %>%
+    tidyr::crossing(Month = 1:12) %>%
+    dplyr::mutate(tn_load = load_tons / 12, Year = year) %>%
+    dplyr::select(bay_seg, entity, Year, Month, tn_load)
+
+  # bayseg is returned as the numeric segidmos code (not the label) so this plugs
+  # directly into dat_proc.R's existing bayseg -> bay_segment factor() conversion
+  out <- dplyr::bind_rows(scaled, evenspread_rows) %>%
+    dplyr::mutate(source = 'NPS') %>%
+    dplyr::rename(year = Year, month = Month, bayseg = bay_seg) %>%
+    dplyr::select(year, month, bayseg, entity, source, tn_load)
+
+  attr(out, 'evenspread_df') <- scale_df %>% dplyr::filter(evenspread)
+  attr(out, 'scale_df') <- scale_df
+
+  return(out)
+
+}

@@ -28,9 +28,15 @@ segidall <- tibble(
 )
 
 # coastal land use code lookup
-clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>% 
-  select(CLUCSID, DESCRIPTION) %>% 
+clucs_lkup <- read.csv('data/raw/CLUCSID_lookup.csv') %>%
+  select(CLUCSID, DESCRIPTION) %>%
   unique
+
+# TBEP-derived (tbeploads/tbeploadsproc) 2022-2025 estimates, replacing RP's 2022-2024
+# deliverables and extending coverage through 2025 (RP has not delivered 2025 data).
+# See tbeploadsproc/R/09_export_2225.R for full provenance and how to regenerate this
+# bundle whenever tbeploads/tbeploadsproc inputs change (e.g. a future 2026 refresh).
+load(here('data/raw/tbep2225.RData'))
 
 # updated hfc/city of tampa data --------------------------------------------------------------
 
@@ -141,42 +147,24 @@ loadra1721tots <- loadra1721 %>%
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-# 2022 - 2024
-# original at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total\SrcSegAnnLoad2224.csv
-loadra2224 <- read.csv(here('data/raw/SrcSegAnnLoad2224.csv')) |> 
-  select(
-    bay_segment = BAY_SEG, 
-    year = YEAR, 
-    source, 
-    tn_load = TN_TONS
-    ) %>% 
-  na.omit() %>% 
-  filter(!bay_segment %in% 5) %>%
-  mutate(
-    source = as.character(factor(source, 
-                    levels = c('AD', 'DPS', 'GW', 'IPS', 'ML', 'NPS', 'SPR'),
-                    labels = c('AD', 'DPS', 'GWS', 'IPS', 'IPS', 'NPS', 'GWS')
-    )),
-    bay_segment = as.character(factor(bay_segment, 
-                         levels = as.character(c(1, 2, 3, 4, 55, 6, 7)), 
-                         labels = c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay', 'Remainder Lower Tampa Bay')))
-  ) %>% 
-  group_by(year, bay_segment, source) %>% 
-  summarise(
-    tn_load = sum(tn_load, na.rm = T), 
-    .groups = 'drop'
-  )
+# 2022 - 2025, TBEP-derived (replaces RP's SrcSegAnnLoad2224.csv deliverable; see
+# tbeploadsproc/R/09_export_2225.R)
+loadratbep2225 <- bind_rows(ad2225seg_yr, dps2225seg_yr, gw2225seg_yr, ips2225seg_yr, ml2225seg_yr, nps2225seg_yr, spr2225seg_yr) %>%
+  select(Year, source, segment, tn_load) %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%   # drops Boca Ciega Bay (bayseg 5), matches historical N. BCB exclusion
+  mutate(source = recode_src5(source)) %>%
+  group_by(year = Year, bay_segment, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
-loadra2224tots <- loadra2224 |> 
-  group_by(year, source) %>% 
-  summarise(
-    tn_load = sum(tn_load, na.rm = T),
-    .groups = 'drop'
-  ) %>% 
+loadratbep2225tots <- loadratbep2225 %>%
+  group_by(year, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop') %>%
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots, loadra2224, loadra2224tots) %>%
-  tidyr::complete(bay_segment, source, year, fill = list(tn_load = 0)) %>% 
+tnanndat <- bind_rows(tnanndat, loadra1721, loadra1721tots, loadratbep2225, loadratbep2225tots) %>%
+  tidyr::complete(bay_segment, source, year, fill = list(tn_load = 0)) %>%
   arrange(year, bay_segment, source)
 
 save(tnanndat, file = 'data/tnanndat.RData', version = 2)
@@ -272,28 +260,25 @@ totanndatpos <- totanndatpos %>%
     tphy = tp_load / hy_load
   )  
 
-# original here T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
-totanndat2224 <- read.csv(here('data/raw/TOTLoadsRASeg2224.csv')) |> 
-  select(
-    year = YEAR,
-    bay_segment = BAY_SEG,
-    tn_load = TN_TONS, 
-    tp_load = TP_TONS,
-    hy_load = h2oload10e6m3,
-  ) |> 
+# 2022 - 2025, TBEP-derived (replaces RP's TOTLoadsRASeg2224.csv deliverable; see
+# tbeploadsproc/R/09_export_2225.R)
+totanndattbep2225 <- bind_rows(ad2225seg_yr, dps2225seg_yr, gw2225seg_yr, ips2225seg_yr, ml2225seg_yr, nps2225seg_yr, spr2225seg_yr) %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  group_by(year = Year, bay_segment) %>%
+  summarise(
+    tn_load = sum(tn_load, na.rm = T),
+    tp_load = sum(tp_load, na.rm = T),
+    hy_load = sum(hy_load, na.rm = T),
+    .groups = 'drop'
+  ) %>%
   mutate(
-    bay_segment = case_when(
-      bay_segment == 1 ~ 'Old Tampa Bay', 
-      bay_segment == 2 ~ 'Hillsborough Bay', 
-      bay_segment == 3 ~ 'Middle Tampa Bay', 
-      bay_segment == 4 ~ 'Lower Tampa Bay', 
-      bay_segment == 5567 ~ 'Remainder Lower Tampa Bay'
-    ),
     tnhy = tn_load / hy_load,
     tphy = tp_load / hy_load
   )
 
-totanndat <- bind_rows(totanndatpre, totanndatpos, totanndat2224)
+totanndat <- bind_rows(totanndatpre, totanndatpos, totanndattbep2225)
 
 # totals sum by segments
 allseg <- totanndat %>% 
@@ -432,52 +417,38 @@ totsmo <- mosdat %>%
   ) %>% 
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-# 2022 - 2024 loading by month/source
-# original at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
-# received via email request to RP 12/4/24
-mosdat2224 <- read.csv(here('data/raw/monthly2224entityloaddataset.csv')) |> 
-  select(bayseg, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) |> 
-  mutate(
-    source = case_when(
-      source == 'Atmospheric Deposition' ~ 'AD', 
-      source %in% c('Springs', 'Ground Water') ~ 'GWS', 
-      source %in% c('PS - Domestic - REUSE', 'PS - Domestic - SW') ~ 'DPS', 
-      source %in% c('PS - Industrial', 'Material Losses') ~ 'IPS', 
-      source == 'Non-Point Source' ~ 'NPS'
-    )
-  ) |> 
-  group_by(bayseg, year, month, source) |> 
-  summarise(
-    tnload = sum(tnloadtons, na.rm = T), 
-    tpload = sum(tploadtons, na.rm = T), 
-    tssload = sum(tssloadtons, na.rm = T), 
-    bodload = sum(bodloadtons, na.rm = T),
-    .groups = 'drop'
-  ) |> 
-  left_join(segidmos, by = 'bayseg') |> 
-  select(
-    source, 
-    year, 
-    month, 
-    tn_load = tnload, 
-    tp_load = tpload,
-    tss_load = tssload, 
-    bod_load = bodload,
-    bay_segment
-  )
-
-totsmo2224 <- mosdat2224 %>% 
-  group_by(year, month, source) %>% 
+# 2022 - 2025, TBEP-derived (replaces RP's monthly2224entityloaddataset.csv deliverable;
+# see tbeploadsproc/R/09_export_2225.R). AD and GW have no TSS/BOD load estimates in
+# tbeploads (not modeled -- atmospheric deposition and groundwater have no established
+# TSS/BOD methodology). These contribute NA for tss_load/bod_load and are summed with
+# na.rm = TRUE, equivalent to a 0 contribution, consistent with how AD/GWS have always
+# been handled in this dataset.
+mosdattbep2225 <- bind_rows(ad2225seg_mo, dps2225seg_mo, gw2225seg_mo, ips2225seg_mo, ml2225seg_mo, nps2225seg_mo, spr2225seg_mo) %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  mutate(source = recode_src5(source)) %>%
+  group_by(year = Year, month = Month, bay_segment, source) %>%
   summarise(
     tn_load = sum(tn_load, na.rm = T),
-    tp_load = sum(tp_load, na.rm = T), 
-    tss_load = sum(tss_load, na.rm = T), 
+    tp_load = sum(tp_load, na.rm = T),
+    tss_load = sum(tss_load, na.rm = T),
     bod_load = sum(bod_load, na.rm = T),
     .groups = 'drop'
-  ) %>% 
+  )
+
+totsmotbep2225 <- mosdattbep2225 %>%
+  group_by(year, month, source) %>%
+  summarise(
+    tn_load = sum(tn_load, na.rm = T),
+    tp_load = sum(tp_load, na.rm = T),
+    tss_load = sum(tss_load, na.rm = T),
+    bod_load = sum(bod_load, na.rm = T),
+    .groups = 'drop'
+  ) %>%
   mutate(bay_segment = 'All Segments (- N. BCB)')
 
-mosdat <- bind_rows(mosdat, totsmo, mosdat2224, totsmo2224) %>% 
+mosdat <- bind_rows(mosdat, totsmo, mosdattbep2225, totsmotbep2225) %>%
   arrange(year, bay_segment, month, source) %>%
   select(year, month, bay_segment, source, tn_load, tp_load, tss_load, bod_load)
 
@@ -528,33 +499,33 @@ newdat <- dpsupdate %>%
 # swap out old hfc/city of tampa with new
 mosentdat[mosentdat$entity == 'Tampa' & mosentdat$source == 'DPS', ] <- newdat
 
-# 2022 to 2024 monthly entity data
-# original at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
-mosentdat2224 <- read.csv(here('data/raw/monthly2224entityloaddataset.csv')) |> 
-   select(bayseg, entity, year = YEAR, month = MONTH, source, tnloadtons, tploadtons, tssloadtons, bodloadtons) %>% 
-  mutate(
-    source = case_when(
-      source == 'Atmospheric Deposition' ~ 'AD', 
-      source %in% c('Springs', 'Ground Water') ~ 'GWS', 
-      source %in% c('PS - Domestic - REUSE', 'PS - Domestic - SW') ~ 'DPS', 
-      source %in% c('PS - Industrial', 'Material Losses') ~ 'IPS', 
-      source == 'Non-Point Source' ~ 'NPS'
-    )
-  ) %>% 
-  group_by(entity, year, month, source, bayseg) %>% 
-  summarise(
-    tnload = sum(tnloadtons, na.rm = T), 
-    tpload = sum(tploadtons, na.rm = T), 
-    tssload = sum(tssloadtons, na.rm = T), 
-    bodload = sum(bodloadtons, na.rm = T),
-    .groups = 'drop'
-  ) %>% 
-  select(year, month, bayseg, entity, source, tn_load = tnload)
+# 2022 - 2025, TBEP-derived (replaces RP's monthly2224entityloaddataset.csv deliverable;
+# see tbeploadsproc/R/09_export_2225.R). DPS/IPS/ML come directly from tbeploads'
+# entity+segment monthly summaries (anlz_dps/anlz_ips/anlz_ml with summ = 'entity'), which
+# already resolve entity, segment, and source correctly -- no crosswalk join needed here.
+# NPS/MS4 entities require nps_entmo_fun() (see R/funcs.R): no tbeploads function
+# produces monthly, entity-resolved NPS loads directly (anlz_nps has no entity grouping
+# option, and anlz_aa, the only NPS -> entity allocator, is annual-only), so this is a
+# modeled approximation -- see the function's own documentation for the full algorithm.
+dpsmosenttbep2225 <- dps2225entseg_mo %>%
+  mutate(source = recode_src5(source), bayseg = segidall$bayseg[match(segment, segidall$bay_segment)]) %>%
+  filter(bayseg %in% segidmos$bayseg) %>%   # drops Boca Ciega Bay (bayseg 5), matches historical N. BCB exclusion
+  group_by(year = Year, month = Month, bayseg, entity, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
+ipsmosenttbep2225 <- bind_rows(ips2225entseg_mo, ml2225entseg_mo) %>%
+  mutate(source = recode_src5(source), bayseg = segidall$bayseg[match(segment, segidall$bay_segment)]) %>%
+  filter(bayseg %in% segidmos$bayseg) %>%   # drops Boca Ciega Bay (bayseg 5), matches historical N. BCB exclusion
+  group_by(year = Year, month = Month, bayseg, entity, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
-mosentdat <- bind_rows(mosentdat, mosentdat2224) %>% 
+npsmosenttbep2225 <- nps_entmo_fun(npsfactors, nps2225bas_mo, aa2225_yr)
+
+mosentdattbep2225 <- bind_rows(dpsmosenttbep2225, ipsmosenttbep2225, npsmosenttbep2225)
+
+mosentdat <- bind_rows(mosentdat, mosentdattbep2225) %>%
   mutate(
-    bayseg = factor(bayseg, levels = segidmos$bayseg, labels = segidmos$bay_segment), 
+    bayseg = factor(bayseg, levels = segidmos$bayseg, labels = segidmos$bay_segment),
     bayseg = as.character(bayseg)
   )
 
@@ -680,39 +651,26 @@ alloldmohydat <- oldmohydat %>%
     bay_segment = 'All Segments (- N. BCB)'
   )
 
-# original here T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\Total
-mohydat2224 <- read.csv(here('data/raw/segmonthlyh2o_2224_allsources_allsegs.csv')) |> 
-  select(
-    year = YEAR, 
-    month = MONTH, 
-    bay_segment = bayseg, 
-    hy_load_106_m3_mo = h2oload10e6m3
-  ) |> 
-  filter(bay_segment != 5) |> 
-  mutate(
-    bay_segment = case_when(
-      bay_segment == 1 ~ 'Old Tampa Bay', 
-      bay_segment == 2 ~ 'Hillsborough Bay', 
-      bay_segment == 3 ~ 'Middle Tampa Bay', 
-      bay_segment == 4 ~ 'Lower Tampa Bay', 
-      bay_segment %in% c(6, 7, 55) ~ 'Remainder Lower Tampa Bay'
-    )
-  ) |> 
-  summarise(
-    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
-    .by = c(year, month, bay_segment)
-  )
+# 2022 - 2025, TBEP-derived (replaces RP's segmonthlyh2o_2224_allsources_allsegs.csv
+# deliverable; see tbeploadsproc/R/09_export_2225.R). ml2225seg_mo is excluded --
+# Material Loss has no outfall/hydro concept, hy_load is always NA there.
+mohydattbep2225 <- bind_rows(ad2225seg_mo, dps2225seg_mo, gw2225seg_mo, ips2225seg_mo, nps2225seg_mo, spr2225seg_mo) %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  group_by(year = Year, month = Month, bay_segment) %>%
+  summarise(hy_load_106_m3_mo = sum(hy_load, na.rm = T), .groups = 'drop')
 
-allmohydat2224 <- mohydat2224 %>% 
+allmohydattbep2225 <- mohydattbep2225 %>%
   summarise(
-    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T), 
+    hy_load_106_m3_mo = sum(hy_load_106_m3_mo, na.rm = T),
     .by = c(year, month)
-  ) %>% 
+  ) %>%
   mutate(
     bay_segment = 'All Segments (- N. BCB)'
   )
 
-mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat, mohydat2224, allmohydat2224) %>% 
+mohydat <- bind_rows(oldmohydat, alloldmohydat, mohydat, allmohydat, mohydattbep2225, allmohydattbep2225) %>%
   arrange(bay_segment, year, month)
 
 save(mohydat, file = here('data/mohydat.RData'))
@@ -786,41 +744,45 @@ dpsmosdat2 <- read_sas(here('data/raw/dps1721monthentbas.sas7bdat')) %>%
   ) %>% 
   select(year = Year, month = Month, bay_segment, entity, facility = facname, source, tn_load = tnloadtons) 
 
-# nps by mo, lu 2022 - 2024
-# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224NPSMonthlyEntityLUBasin\NPS2224MonthEnBasLU.csv
-npsmosdat2224 <- read.csv(here('data/raw/NPS2224MonthEnBasLU.csv')) %>% 
-  inner_join(segidmos, by = 'bayseg') %>% 
-  left_join(clucs_lkup, by = 'CLUCSID') %>% 
-  mutate(
-    source = 'NPS'
-  ) %>% 
-  select(year, month, bay_segment, entity, lu = DESCRIPTION, source, tn_load = tnloadtons)
+# 2022 - 2025, TBEP-derived (replaces RP's NPS2224MonthEnBasLU.csv/IPS2224MonthEntBas.csv/
+# DPS2224MonthEntBas.csv deliverables; see tbeploadsproc/R/09_export_2225.R).
+#
+# npsmosdat: nps2225lu_mo (aslu = TRUE) has no entity column -- tbeploads' land-use
+# breakdown decomposes by segment/basin/land-use only, not jurisdiction, and the only
+# consumer of npsmosdat's entity column (index.Rmd) sums over entity before use anyway,
+# so this is not a loss of information that matters downstream. aslu = TRUE also only
+# decomposes ungaged-basin loads by land use; gaged-basin loads are gauge-measured, with
+# nothing to decompose -- an inherent modeling limitation shared by RP's historical data,
+# not a new gap.
+npsmosdattbep2225 <- nps2225lu_mo %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  mutate(source = 'NPS') %>%
+  group_by(year = Year, month = Month, bay_segment, lu, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
-# ips by mo, lu 2022 - 2024
-# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224IPSMonthlyEntityBasin\IPS2224MonthEntBas.csv
-ipsmosdat2224 <- read.csv(here('data/raw/IPS2224MonthEntBas.csv')) %>% 
-  inner_join(segidmos, by = c('BaySeg' = 'bayseg')) %>% 
-  mutate(
-    source = 'IPS'
-  ) %>% 
-  select(year = Year, month = Month, bay_segment, facility = Fac.Name, source, tn_load = TNLoad..tons.mnth.)
+# ips by mo, facility 2022 - 2025 (ML folded into IPS per existing convention)
+ipsmosdattbep2225 <- bind_rows(ips2225facseg_mo, ml2225facseg_mo) %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  mutate(source = 'IPS') %>%
+  group_by(year = Year, month = Month, bay_segment, facility, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
-# domestic point source 2022-2024 RA
-# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224DPSMonthlyEntityBasin\DPS2224MonthEntBas.csv
-dpsmosdat2224 <- read.csv(here('data/raw/DPS2224MonthEntBas.csv')) %>% 
-  inner_join(segidmos, by = c('BaySeg' = 'bayseg')) %>%
-  mutate(
-    source = case_when(
-      grepl('REUSE$', Source) ~ 'DPS - reuse', 
-      grepl('SW$', Source) ~ 'DPS - end of pipe'
-    )
-  ) %>% 
-  select(year = Year, month = Month, bay_segment, entity = Entity, facility = Fac.Name, source, tn_load = TNLoad..tons.mnth.) 
+# dps by mo, facility 2022 - 2025 -- anlz_dps() already resolves source to "DPS - end of
+# pipe"/"DPS - reuse" internally, no recoding needed
+dpsmosdattbep2225 <- dps2225facseg_mo %>%
+  left_join(segidall, by = c('segment' = 'bay_segment')) %>%
+  left_join(segidmos, by = 'bayseg') %>%
+  filter(!is.na(bay_segment)) %>%
+  group_by(year = Year, month = Month, bay_segment, entity, facility, source) %>%
+  summarise(tn_load = sum(tn_load, na.rm = T), .groups = 'drop')
 
-
-npsmosdat <- bind_rows(npsmosdat, npsmosdat2, npsmosdat2224)
-ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2, ipsmosdat2224)
-dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2, dpsmosdat2224)
+npsmosdat <- bind_rows(npsmosdat, npsmosdat2, npsmosdattbep2225)
+ipsmosdat <- bind_rows(ipsmosdat, ipsmosdat2, ipsmosdattbep2225)
+dpsmosdat <- bind_rows(dpsmosdat, dpsmosdat2, dpsmosdattbep2225)
 
 # correction to dpsmosdat from hfc update
 dpscorr <- dpsdiff_fun(dpsupdate, annual = F, total = F, varsel = 'tn_load')
@@ -868,20 +830,12 @@ npsmosludat2 <- read_sas(here('data/raw/nps1721monthenbaslu.sas7bdat')) %>%
   ) %>% 
   select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
 
-# nps by mo, lu 2022 - 2024
-# source at T:\03_BOARDS_COMMITTEES\05_TBNMC\TB_LOADS\2027_RA_Deliverables\2224\LUEntity\2224NPSMonthlyEntityLUBasin\NPS2224MonthEnBasLU.csv
-npsmosludat2224 <- read.csv(here('data/raw/NPS2224MonthEnBasLU.csv')) |> 
-  inner_join(segidmos, by = 'bayseg') |> 
-  left_join(clucs_lkup, by = 'CLUCSID') |>
-  summarise(
-    tn_load = sum(tnloadtons, na.rm = T), 
-    .by = c('DESCRIPTION', 'bay_segment', 'year', 'month')
-  ) |> 
-  mutate(
-    source = 'NPS'
-  ) |> 
-  select(year, month, bay_segment, `land use` = DESCRIPTION, source, tn_load)
+# 2022 - 2025, TBEP-derived (replaces RP's NPS2224MonthEnBasLU.csv deliverable; see
+# tbeploadsproc/R/09_export_2225.R) -- same aslu = TRUE source as npsmosdattbep2225
+# above, just without entity (npsmosludat was already entity-less historically)
+npsmosludattbep2225 <- npsmosdattbep2225 %>%
+  rename(`land use` = lu)
 
-npsmosludat <- bind_rows(npsmosludat, npsmosludat2, npsmosludat2224)
+npsmosludat <- bind_rows(npsmosludat, npsmosludat2, npsmosludattbep2225)
 
 save(npsmosludat, file = here('data/npsmosludat.RData'), version = 2)

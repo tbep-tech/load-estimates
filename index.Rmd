@@ -106,7 +106,7 @@ Hydrologically-normalized load targets, as a ratio of total nitrogen to hydrolog
 
 <img src="figs/segmap.png" alt="Major bay segments in Tampa Bay used to assign load estimates. The Remainder of Lower Tampa Bay includes the Manatee River, Terra Ceia Bay, and Boca Ciega Bay. Figure courtesy of Janicki Environmental, Inc." width="40%" />
 
-## Total nitrogen (annual, 1985 - 2024) {.tabset}
+## Total nitrogen (annual, 1985 - 2025) {.tabset}
 
 ```{r}
 column(12, 
@@ -150,7 +150,7 @@ Data from the __Download plot data__ button includes the following:
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS, includes springs loadings with Hillsborough Bay having the only contributions), industrial point source (IPS), and non-point source (NPS)
 * __*tn_load*__: total nitrogen load in tons (US) / year
 
-## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 1995 - 2024) {.tabset}
+## Total nitrogen, phosphorus, suspended solids, and BOD by source (monthly, 1995 - 2025) {.tabset}
 
 ```{r}
 column(12,
@@ -223,7 +223,7 @@ rct_tab(mosdat, dtvar = 'date', typ = 'tn', val = 'bod_load')
 
 Data from the __Download all plot data__ button includes monthly estimates by bay segment and source for total nitrogen, phosphorus, suspended solids, and BOD. Columns are as follows: 
 
-* __*year*__: year of the estimate (1995 - 2024)
+* __*year*__: year of the estimate (1995 - 2025)
 * __*month*__: month of the estimate
 * __*bay_segment*__: the bay segment for the source/year estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*source*__: total nitrogen source as atmospheric deposition (AD), domestic point source (DPS), groundwater source (GWS, includes springs loadings with Hillsborough Bay having the only contributions), industrial point source (IPS), and non-point source (NPS)
@@ -232,7 +232,7 @@ Data from the __Download all plot data__ button includes monthly estimates by ba
 * __*tss_load*__: total suspended solids load in tons / month
 * __*bod_load*__: biological oxygen demand in tons / month
 
-## Total hydrologic load (monthly, 1985 - 2024) {.tabset}
+## Total hydrologic load (monthly, 1985 - 2025) {.tabset}
 
 ```{r}
 column(12,
@@ -274,7 +274,7 @@ Data from the __Download all plot data__ button includes the following:
 * __*bay_segment*__: the bay segment for the month estimate, one of Old Tampa Bay, Hillsborough Bay, Middle Tampa Bay, Lower Tampa Bay, Remainder of Lower Tampa Bay (Manatee River, Terra Ceia Bay, and Boca Ciega Bay South), and all segments as the sum of all (excluding Boca Ciega Bay North)
 * __*hy_load_106_m3_mo*__: hydrologic load as 10$^6$ m$^3$/month
 
-## Non-point source by land use (monthly, 2004 - 2024) {.tabset}
+## Non-point source by land use (monthly, 2004 - 2025) {.tabset}
 
 ```{r}
 column(12,
